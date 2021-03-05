@@ -1,0 +1,6 @@
+# 8: Simulation
+
+```{r part_8_premble, include=FALSE}
+#### Code for part 8: Simulation ####
+```
+text here...

@@ -1,0 +1,6 @@
+# 6: Behavioural Estimation
+
+```{r part_6_premble, include=FALSE}
+#### Code for part 6: Behavioural Estimation ####
+```
+text here...

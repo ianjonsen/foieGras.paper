@@ -1,0 +1,6 @@
+# 4: SSM fitting
+
+```{r part_4_premble, include=FALSE}
+#### Code for part 4: SSM fitting ####
+```
+text here...

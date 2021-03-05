@@ -1,0 +1,6 @@
+# 5: Visualisation and Diagnostics
+
+```{r part_5_premble, include=FALSE}
+#### Code for part 5: Visualisation and Diagnostics ####
+```
+text here...
