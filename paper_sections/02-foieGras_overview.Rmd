@@ -3,5 +3,5 @@
 ```{r part_2_premble, include=FALSE}
 #### Code for part 2: foieGras Overview ####
 ```
-text here...
+The workflow for \texttt{foieGras} is deliberately simple, with much of the usual track data processing checks and formatting handled automatically.
 
