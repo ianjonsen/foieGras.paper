@@ -3,5 +3,33 @@
 ```{r part_2_premble, include=FALSE}
 #### Code for part 2: foieGras Overview ####
 ```
-The workflow for \texttt{foieGras} is deliberately simple, with much of the usual track data processing checks and formatting handled automatically.
+The workflow for \texttt{foieGras} is deliberately simple, with much of the usual track data processing checks and formatting handled automatically. The main functions are listed in Table \ref{tab:func_table_kable}.
+
+
+```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
+func_table <- data.frame(
+  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "plot.fG_mpm", "plot.fG_osar", "plot.fG_ssm"),
+  Description = c("Fit a Move Persistence Model to location data",
+                  "Fit a State-Space Model to location data",
+                  "Plot fitted/predicted locations on a map with or without a defined projection",
+                  "Extract fitted/predicted/observed locations from a foieGras model, with or without projection information",
+                  "Estimate One-Step-Ahead Residuals from a foieGras SSM",
+                  "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
+                  "Plot One-Step-Ahead Residuals from a foieGras SSM",
+                  "Visualise the fit of a foieGras SSM to data"
+  )
+)
+
+```
+
+```{r func_table_kable, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE, purl=FALSE}
+kable(func_table, 
+      format = table_out_format, 
+      caption="Main functions for the R package \\texttt{foieGras}", 
+      booktabs = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, latex_column_spec = ">{\\\\hangindent=2em}p{25em}" ) %>%
+  
+kable_styling(full_width = FALSE)
+```
 

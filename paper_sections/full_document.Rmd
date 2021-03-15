@@ -64,6 +64,17 @@ theme_update(panel.grid.major = element_line(size = 0.25),
 if(getRversion() < 3.6) RNGversion("3.6.0")
 ```
 
+```{r setup_tables, include=FALSE, purl=FALSE}
+#This code is for configuring latex tables. It is not needed for general script
+#usage.
+table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("../paper_sections/full_document.Rmd"),
+                    "latex",
+                     ifelse("html_document" %in% rmarkdown::all_output_formats("../paper_sections/full_document.Rmd"),
+                            "html",
+                            NA_character_)
+                      )
+```
+
 # Abstract
 text...
 
