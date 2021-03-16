@@ -3,7 +3,7 @@
 ```{r part_2_premble, include=FALSE}
 #### Code for part 2: foieGras Overview ####
 ```
-The workflow for `foieGras` is deliberately simple, with much of the usual track data processing checks and formatting handled automatically. The main functions are listed in Table \ref{tab:func_table_kable}. When fitting a model, `foieGras` automatically detects the type of tracking data location quality classes designations that are typical of Argos data and that can be added to the data by the researcher for other types of track data. Based on the location quality classes and other, optional information on observation errors contained in the data, `foieGras` chooses an appropriate observation error model for each observation. This capability allows for combinations of different tracking data types, e.g., Argos and GPS, in a single input data frame and fit in a single state-space model. 
+The workflow for `foieGras` is deliberately simple, with much of the usual track data processing checks and formatting handled automatically. The main functions are listed in Table \ref{tab:func_table_kable}. When fitting a model, `foieGras` automatically detects the type of tracking data location quality classes designations that are typical of Argos data and that can be added to the data by the researcher for other types of track data. Based on the location quality classes and other, optional information on observation errors contained in the data, `foieGras` chooses an appropriate observation error model for each observation. This capability allows for combinations of different tracking data types, e.g., Argos and GPS, in a single input data frame and to be fit in a single state-space model. 
 
 ```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
 func_table <- data.frame(
@@ -32,7 +32,12 @@ kable(func_table,
 kable_styling(full_width = FALSE)
 ```
 
-### Data preparation and prefiltering
+### Data preparation
+Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a data frame using standard functions such as `read.csv`. The canonical data format for Argos tracks consists of a data frame with 5 columns corresponding to the following named variables: `id` (individual id), `date` (date and time), `lc` (location class), `lon` (longitude), `lat` (latitude). Optionally, an additional 3 columns, `smaj` (semi-major axis), `smin` (semi-minor axis), `eor` (ellipse orientation), providing Argos error ellipse information may be included.
+
+Other types of track data can be accommodated, for example, by including the `lc` column where all `lc = "G"` for GPS data. In this case, measurement error in the GPS locations is assumed to have a standard deviation of 0.1 x Argos class 3 locations (approximately 30 m). Other types of track data can be considered in a similar manner (see the package vignette for further details).
+
+
 
 
 ### State-space model fitting

@@ -1,9 +1,7 @@
 ---
 title: "foieGras an R package for rapid quality control, behavioural estimation and simulation of animal track data"
 header-includes:
-  - \usepackage{lineno}
-    \usepackage{placeins}
-    \linenumbers
+  - \usepackage{placeins}
 compact-title: FALSE
 output:
   pdf_document:
@@ -91,11 +89,16 @@ text...
 ```
 
 # Acknowledgements
+We thank xx, xx for providing data used in the examples, and xx, xx for helpful comments on an earlier draft of this manuscript. We thank Marie Auger-Méthé for contributing code to the movement persistence models. IDJ acknowledges support from a Macquarie University co-Funded Fellowship and from partners: the US Office of Naval Research, Marine Mammal Program (grant N00014-18-1-2405); the Integrated Marine Observing System (IMOS Australia); Taronga Conservation Society; the Ocean Tracking Network; Birds Canada; and Innovasea/VEMCO. TAP was supported by CSIRO Oceans & Atmosphere internal research funding scheme.
 
 # Author's Contributions
+IDJ developed the R package; IDJ and TAP developed the state-space models and wrote the manuscript.
 
-# Data Accessibility
+# Data Accessibility 
+All code mentioned here is provided in the `foieGras` package for R available on CRAN at \url{https://CRAN.R-project.org/package=foieGras}. The development version of the package is available on GitHub at \url{https://github.com/ianjonsen/foieGras}. Data used in the examples are available at...
 
 # ORCID
+*Ian D Jonsen* \url{https://orcid.org/0000-0001-5423-6076}  
+*Toby A Patterson* \url{https://orcid.org/0000-0002-7150-9205}
 
 # Bibliography
