@@ -1,4 +1,4 @@
-# 4: Discussion
+# 4 | Discussion
 
 ```{r part_4_premble, include=FALSE}
 #### Code for part 4: Discussion ####

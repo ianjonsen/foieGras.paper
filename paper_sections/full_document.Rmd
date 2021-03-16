@@ -2,11 +2,17 @@
 title: "foieGras an R package for rapid quality control, behavioural estimation and simulation of animal track data"
 header-includes:
   - \usepackage{placeins}
+  - \usepackage{fontspec}
+  - \setmainfont[Ligatures=TeX, BoldFont={Helvetica Neue Medium}, ItalicFont={Helvetica Neue Light Italic}]{Helvetica Neue Light}
+  - \usepackage{sectsty}
+  - \sectionfont{\sffamily\large\scshape}
+  - \subsectionfont{\sffamily\normalsize\scshape}
 compact-title: FALSE
 output:
   pdf_document:
     fig_caption: yes
     keep_tex: yes
+    latex_engine: xelatex
     includes:
         in_header:
           - preamble.sty
@@ -79,7 +85,7 @@ text...
 ```{r child = '01-intro.Rmd'}
 ```
 \FloatBarrier
-```{r child = '02-foieGras_overview.Rmd'}
+```{r child = '02-overview.Rmd'}
 ```
 \FloatBarrier
 ```{r child = '03-examples.Rmd'}

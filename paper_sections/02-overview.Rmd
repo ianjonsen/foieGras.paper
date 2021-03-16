@@ -1,4 +1,4 @@
-# 2: foieGras Overview
+# 2 | `foieGras` Overview
 
 ```{r part_2_premble, include=FALSE}
 #### Code for part 2: foieGras Overview ####
@@ -32,21 +32,21 @@ kable(func_table,
 kable_styling(full_width = FALSE)
 ```
 
-### Data preparation
+## 2.1 | Data preparation
 Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a data frame using standard functions such as `read.csv`. The canonical data format for Argos tracks consists of a data frame with 5 columns corresponding to the following named variables: `id` (individual id), `date` (date and time), `lc` (location class), `lon` (longitude), `lat` (latitude). Optionally, an additional 3 columns, `smaj` (semi-major axis), `smin` (semi-minor axis), `eor` (ellipse orientation), providing Argos error ellipse information may be included.
 
 Other types of track data can be accommodated, for example, by including the `lc` column where all `lc = "G"` for GPS data. In this case, measurement error in the GPS locations is assumed to have a standard deviation of 0.1 x Argos class 3 locations (approximately 30 m). Other types of track data can be considered in a similar manner (see the package vignette for further details).
 
+## 2.2 | State-space model fitting - `fit_ssm`
 
 
 
-### State-space model fitting
+
+## 2.3 | Visualisation and diagnostics
 
 
-### Visualisation and diagnostics
+
+## 2.4 | Behavioural estimation
 
 
-### Behavioural estimation
-
-
-### Simulation
+## 2.5 | Simulation
