@@ -1,0 +1,9 @@
+# 3: Examples
+
+```{r part_3_premble, include=FALSE}
+#### Code for part 3: Examples ####
+```
+text here...
+
+
+### Extending the behavioural model

@@ -1,6 +1,0 @@
-# 7: Extending the Behavioural Model
-
-```{r part_7_premble, include=FALSE}
-#### Code for part 7: Extending the Behavioural Model ####
-```
-text here...

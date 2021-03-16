@@ -84,28 +84,10 @@ text...
 ```{r child = '02-foieGras_overview.Rmd'}
 ```
 \FloatBarrier
-```{r child = '03-data_prep.Rmd'}
+```{r child = '03-examples.Rmd'}
 ```
 \FloatBarrier
-```{r child = '04-ssm_fitting.Rmd'}
-```
-\FloatBarrier
-```{r child = '05-visualisation_diagnostics.Rmd'}
-```
-\FloatBarrier
-```{r child = '06-behavioural_estimation.Rmd'}
-```
-\FloatBarrier
-```{r child = '07-extending_the_behavioural_model.Rmd'}
-```
-\FloatBarrier
-```{r child = '08-simulation.Rmd'}
-```
-\FloatBarrier
-```{r child = '09-examples.Rmd'}
-```
-\FloatBarrier
-```{r child = '10-discussion.Rmd'}
+```{r child = '04-discussion.Rmd'}
 ```
 
 # Acknowledgements

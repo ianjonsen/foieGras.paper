@@ -1,6 +1,0 @@
-# 9: Examples
-
-```{r part_9_premble, include=FALSE}
-#### Code for part 9: Examples ####
-```
-text here...
