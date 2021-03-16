@@ -1,5 +1,5 @@
 ---
-title: "foieGras an R package for rapid quality control, behavioural estimation and simulation of animal track data"
+title: "`foieGras` an R package for rapid quality control, behavioural estimation and simulation of animal track data"
 header-includes:
   - \usepackage{placeins}
   - \usepackage{fontspec}
