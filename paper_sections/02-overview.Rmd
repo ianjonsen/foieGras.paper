@@ -41,7 +41,7 @@ Other types of track data can be accommodated, for example, by including the `lc
 State-space models are fit using `fit_ssm`. There are a large number of options that can be set in `fit_ssm` (see Suppl for details). We focus only the essential options here:  
 
 - `data` the input data structured as described in **2.1** 
-- `vmax` a maximum threshold speed (ms$^{-1}$) to help identify potential outlier locations 
+- `vmax` a maximum threshold speed (ms^-1^) to help identify potential outlier locations 
 - `model` the process model to be used 
 - `time.step` the prediction time interval (h)
 
@@ -52,7 +52,7 @@ The function then fits a state-space model to the processed data, where the proc
 `fit_ssm` returns a `foieGras` fit object (a nested data frame with class `fG_ssm`). The outer data frame lists the individual id(s), basic convergence information and a list with class `ssm`. This list contains dense information on the model parameter and state estimates, predictions, processed data, optimizer results, and other diagnostic and contextual information. Users can extract a simple data frame of SSM fitted (location estimates corresponding to the, typically irregular, observation times) or predicted values (locations predicted at regular `time.step` intervals) using the `grab` function. 
 
 ## 2.3 | Model checking and visualisation
-
+Before using fitted or predicted locations, a model fit should be checked and visualised to confirm that underlying assumptions have been met. 
 
 
 ## 2.4 | Behavioural estimation
