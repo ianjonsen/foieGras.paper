@@ -13,14 +13,14 @@
 \usepackage{makecell}
 \usepackage{lineno}
 \usepackage{placeins}
-\usepackage{authblk}
-\usepackage{amssymb,amsmath}
 \usepackage{url}
 
 \linenumbers
 
-\author[1,*]{Ian D. Jonsen}
-\author[2]{Toby A. Patterson}
-\affil[1]{Department of Biological Sciences, Macquarie University, Sydney, NSW, Australia}
-\affil[2]{CSIRO Ocean and Atmosphere Research, Hobart, TAS, Australia}
-\affil[*]{Corresponding author. Email: ian.jonsen@mq.edu.au}
+\newcommand*{\affaddr}[1]{#1} % No op here. Customize it for different styles.
+\newcommand*{\affmark}[1][*]{\textsuperscript{#1}}
+
+%\author{Ian D. Jonsen$^{1,*}$ and Toby A. Patterson$^2$}
+%\affil[1]{Department of Biological Sciences, Macquarie University, Sydney, NSW, Australia}
+%\affil[2]{CSIRO Ocean and Atmosphere Research, Hobart, TAS, Australia}
+%\affil[*]{Corresponding author. Email: ian.jonsen@mq.edu.au}
