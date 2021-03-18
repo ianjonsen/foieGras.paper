@@ -3,6 +3,25 @@
 ```{r part_3_premble, include=FALSE}
 #### Code for part 3: Examples ####
 ```
+## Southern Elephant seal
+something quick about the data here. Sentence about fitting `rw` and `crw` models then show code for fitting:
+```{r ellie SSM}
+fit.rw <- fit_ssm(ellie, vmax=4, model="rw", time.step=12, verbose=0)
+res.rw <- osar(fit.rw)
+
+fit.crw <- fit_ssm(ellie, vmax=4, model="crw", time.step=12, verbose=0)
+res.crw <- osar(fit.crw)
+```
+
+```{r ellies model check, echo=FALSE, fig.width=6, fig.height=6}
+plot(res.rw, "qq")
+plot(res.rw, "acf")
+
+plot(res.crw, "qq")
+plot(res.crw, "acf")
+```
+
+
 
 
 ## 3.x | Extending the behavioural model using `mpmm`
