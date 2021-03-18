@@ -56,7 +56,7 @@ Before using fitted or predicted locations, a model fit should be checked and vi
 
 A generic plot method `plot.fG_osar` provides an easy way to visualisation the prediction residuals. Time-series plots of the prediction residuals can be used to detect temporal changes in goodness-of-fit. Quantile-quantile plots of residuals against standard normal quantiles can be used to detect departures from normality. Sample autocorrelation function plots of the residuals are useful for detecting autocorrelation not accounted for by the model. Assessing residual autocorrelation can be particularly important as Argos locations, for example, are themselves derived from a time-series model [@Lopez:2015] which can introduce additional autocorrelation in the location errors.
 
-
+State-space model fits to data can also be visualised by using the generic `plot.fG_ssm` function on an `fG_ssm` data frame.
 
 
 ## 2.4 | Behavioural estimation
