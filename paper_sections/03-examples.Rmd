@@ -13,12 +13,15 @@ fit.crw <- fit_ssm(ellie, vmax=4, model="crw", time.step=12, verbose=0)
 res.crw <- osar(fit.crw)
 ```
 
-```{r ellies model check, echo=FALSE, fig.width=6, fig.height=6}
-plot(res.rw, "qq")
-plot(res.rw, "acf")
+```{r Fig1, echo=FALSE, fig.width=6, fig.height=4, out.width="\\linewidth", fig.cap="\\label{fig:ellie}Ellie ex."}
+p1 <- plot(res.rw, "qq") + theme_minimal()
+p2 <- plot(res.rw, "acf") + theme_minimal()
 
-plot(res.crw, "qq")
-plot(res.crw, "acf")
+p3 <- plot(res.crw, "qq") + theme_minimal()
+p4 <- plot(res.crw, "acf") + theme_minimal()
+
+(p1 | p2) /
+(p3 | p4)
 ```
 
 
