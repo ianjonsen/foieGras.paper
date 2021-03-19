@@ -116,4 +116,4 @@ All code mentioned here is provided in the `foieGras` package for R available on
 *Ian D Jonsen* \url{https://orcid.org/0000-0001-5423-6076}  
 *Toby A Patterson* \url{https://orcid.org/0000-0002-7150-9205}
 
-# Bibliography
+# References
