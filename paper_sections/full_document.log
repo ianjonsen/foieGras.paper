@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018) (preloaded format=xelatex 2018.4.16)  20 MAR 2021 09:48
+This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018) (preloaded format=xelatex 2018.4.16)  20 MAR 2021 17:09
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1561,43 +1561,44 @@ LaTeX Font Warning: Font shape `TU/lmss/bx/sc' undefined
 (Font)              using `TU/lmss/bx/n' instead on input line 167.
 
 LaTeX Font Info:    Font shape `TU/HelveticaNeueLight(0)/m/it' will be
-(Font)              scaled to size 10.95pt on input line 177.
+(Font)              scaled to size 10.95pt on input line 183.
 
 LaTeX Font Warning: Font shape `TU/lmtt/bx/sc' undefined
-(Font)              using `TU/lmtt/bx/n' instead on input line 184.
+(Font)              using `TU/lmtt/bx/n' instead on input line 190.
 
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 184.
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 190.
 LaTeX Font Info:    Font shape `TU/HelveticaNeueLight(0)/bx/n' will be
-(Font)              scaled to size 12.0pt on input line 221.
-LaTeX Font Info:    Font shape `TU/lmtt/bx/sc' in size <10.95> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 243.
+(Font)              scaled to size 12.0pt on input line 227.
 [1
 
-] [2] [3]
+]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/sc' in size <10.95> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 249.
+[2] [3]
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 394.
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 401.
 File: ../figures/Fig1-1.pdf Graphic file (type pdf)
 <use ../figures/Fig1-1.pdf>
-[4]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 518.
-[5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 518.
+[4] [5]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 525.
+[6]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 525.
 (./full_document.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 518.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 518.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 525.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 525.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 518.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 525.
  ) 
 Here is how much of TeX's memory you used:
  27691 strings out of 492970
  500186 string characters out of 6133938
- 733872 words of memory out of 5000000
+ 732872 words of memory out of 5000000
  31378 multiletter control sequences out of 15000+600000
  536809 words of font info for 88 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  59i,11n,117p,10408b,506s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on full_document.pdf (5 pages).
+Output written on full_document.pdf (6 pages).

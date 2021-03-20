@@ -89,7 +89,13 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \end{center}
 
 # Abstract
-text...
+1.  
+
+2.  
+
+3.  
+
+4.  
 
 ### Keywords: 
 
