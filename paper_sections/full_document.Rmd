@@ -1,5 +1,5 @@
 ---
-title: "`foieGras` an R package for rapid quality control, behavioural estimation and simulation of animal track data"
+title: "`foieGras` an R package for animal movement data: rapid quality control, behavioural estimation and simulation"
 header-includes:
   - \usepackage{placeins}
   - \usepackage{fontspec}
@@ -7,7 +7,7 @@ header-includes:
   - \usepackage{sectsty}
   - \sectionfont{\sffamily\large\scshape}
   - \subsectionfont{\sffamily\normalsize\scshape}
-compact-title: FALSE
+compact-title: TRUE
 output:
   pdf_document:
     fig_caption: yes
@@ -90,6 +90,8 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 
 # Abstract
 text...
+
+### Keywords: 
 
 ```{r child = '01-intro.Rmd'}
 ```
