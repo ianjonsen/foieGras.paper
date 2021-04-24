@@ -7,15 +7,17 @@ The workflow for `foieGras` is deliberately simple, with much of the usual track
 
 ```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
 func_table <- data.frame(
-  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "plot.fG_mpm", "plot.fG_osar", "plot.fG_ssm"),
+  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "plot.fG_mpm", "plot.fG_ssm", "plot.fG_osar"),
   Description = c("Fit a Move Persistence Model to location data",
                   "Fit a State-Space Model to location data",
                   "Plot fitted/predicted locations on a map with or without a defined projection",
                   "Extract fitted/predicted/observed locations from a foieGras model, with or without projection information",
                   "Estimate One-Step-Ahead Residuals from a foieGras SSM",
+                  "Simulate individual animal tracks with Argos LS or KF errors",
+                  "Simulate animal tracks from `fG_ssm` fit objects",
                   "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
-                  "Plot One-Step-Ahead Residuals from a foieGras SSM",
-                  "Visualise the fit of a foieGras SSM to data"
+                  "Plot the fit of a foieGras SSM to data",
+                  "Plot One-Step-Ahead Residuals from a foieGras SSM"
   )
 )
 
@@ -61,6 +63,7 @@ State-space model fits to data can also be visualised by using the generic `plot
 ## 2.4 | Behavioural estimation - `fit_mpm`
 The `fit_mpm` function fits a simple move persistence model to estimate a continuous-valued, time-varying latent variable that indexes changes in movement behaviour [@Jonsen:2019]. This variable measures the autocorrelation in speed and direction between consecutive pairs of movements such that high values correspond to fast, directed movements at one end of the continuum and low values correspond to slow, tortuous movements at the other end. It's important to note that this approach is unlike hidden Markov models [@Michelot:2016;@McClintock:2018] and some state-space models [@Jonsen:2016] as there is no notion of discrete behavioural states that animals periodically switch between. Nonetheless, move persistence can be used to identify objectively places where animals spend disproportionately more or less time, and with extensions be correlated with environment or other covariates (See Examples 3.x).  
 
-The move persistence model assumes that locations are absent of measurement error and can occur either irregularly or regularly in time. `fit_mpm` takes either a `fG_ssm` data frame as input or a data frame with the follow variables: `id`, `date`, `x`, `y`, where `x` and `y` coordinates can be planar `x,y` or spherical `long,lat`. This latter input format allows the model to be fit easily to GPS or other tracking data with negligible measurement error. When the data contain multiple individuals, the default model is fit jointly by assuming all individuals share the same move persistence variance parameter. There is an option to fit the model separately to each individual. The time-series of estimated move persistence with confidence intervals can be visualised by using the generic `plot` function with the resulting `fG_mpm` data frame. Visualisation of move persistence along the 2-D tracks can be plotted or mapped by using the `plot` or `fmap` functions, respectively, and supplying both the `fG_mpm` and `fG_ssm` data frames. 
+The move persistence model assumes that locations are absent of measurement error and can occur either irregularly or regularly in time. `fit_mpm` takes either a `fG_ssm` data frame as input or a data frame with the follow variables: `id`, `date`, `x`, `y`, where `x` and `y` coordinates can be planar `x,y` or spherical `long,lat`. This latter input format allows the model to be fit easily to GPS or other tracking data with negligible measurement error. When the data contain multiple individuals, the default model is fit jointly by assuming all individuals share the same move persistence variance parameter. There is an option to fit the model separately to each individual. The time-series of estimated move persistence with confidence intervals can be visualised by using the generic `plot` function with the resulting `fG_mpm` data frame. Visualisation of move persistence along the 2-D tracks can be plotted or mapped by using the `plot` or `fmap` functions, respectively, and supplying both the `fG_mpm` and `fG_ssm` nested data frames. 
 
-## 2.5 | Simulation - `simulate`
+## 2.5 | Simulation - `sim`, `simfit`
+Track simulation can be helpful for evaluating the degree to which statistical movement models are robust to variability in movement patterns or behaviour [@Michelot:2017]. Simulation is also frequently used to predict habitat availability, i.e. a null model of population distribution in the absence of external drivers, for habitat utilization models [@Raymond:2015].
