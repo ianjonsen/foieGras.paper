@@ -3,26 +3,37 @@
 ```{r part_3_premble, include=FALSE}
 #### Code for part 3: Examples ####
 ```
+We illustrate the main capabilities of `foieGras` through a series of examples using real or simulated tracking data. These examples are purely for demonstration purposes and not intended as a comprehensive guide for conducting animal tracking data quality control or analysis with `foieGras`. Complete code for reproducing the examples and in-depth understanding of `foieGras` functions are provided as supplements.
+
 ## Southern Elephant seal
-something quick about the data here. Sentence about fitting `rw` and `crw` models then show code for fitting:
-```{r ellie SSM}
-fit.rw <- fit_ssm(ellie, vmax=4, model="rw", time.step=12, verbose=0)
+We use an example subadult male southern elephant seal track included in `foieGras` (`sese1`), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via http://imos.aodn.org.au) 2009 deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` methods for `osar` residuals to assess and compare the model fits \ref{fig:ex1}. The plots of predicted states on top of the data suggests both models yield similar fits (\ref{fig:ex1}a,b), however, there is a marked trend in the time-series of residuals for the `rw` model fit (\ref{fig:ex1}c) and the ACF reveals consistent positive autocorrelation in the prediction residuals (\ref{fig:ex1}e. The corresponding `crw` prediction residuals show no apparent trend through time and have relatively little autocorrelation (\ref{fig:ex1}d,h).
+
+```{r ellie SSM, eval=FALSE}
+fit.rw <- fit_ssm(sese1, vmax=4, model="rw", time.step=12, verbose=0)
 res.rw <- osar(fit.rw)
 
-fit.crw <- fit_ssm(ellie, vmax=4, model="crw", time.step=12, verbose=0)
+fit.crw <- fit_ssm(sese1, vmax=4, model="crw", time.step=12, verbose=0)
 res.crw <- osar(fit.crw)
 ```
 
-```{r Fig1, echo=FALSE, fig.width=8, fig.height=4, out.width="\\linewidth", fig.cap="\\label{fig:ellie}Ellie ex."}
+```{r ex1, echo=FALSE, message=FALSE, results='hide', fig.width=6.5, fig.height=4, cache=TRUE, fig.cap="\\label{fig:ex1}Diagnostic plots for assessing `rw` (a,c,e,g) and `crw` (b,d,f,h) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are quantile-quantile plots of the prediction residuals. Panels g,h are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function.", messages=FALSE, dev=c('pdf'), out.width="\\linewidth"}
 
-p1 <- plot(res.rw, "qq") + theme_minimal()
-p2 <- plot(res.rw, "acf") + theme_minimal()
+load("../data/ex1.RData")
 
-p3 <- plot(res.crw, "qq") + theme_minimal()
-p4 <- plot(res.crw, "acf") + theme_minimal()
+#pA <- plot(fit.rw, "p", type = 2, pages=1, ask=0)
+#pB <- plot(fit.crw, "p", type = 2, pages=1, ask=0)
+p1 <- plot(res.rw, "ts")
+#p2 <- plot(res.rw, "qq")
+p3 <- plot(res.rw, "acf")
 
-(p1 | p2) /
-(p3 | p4)
+p4 <- plot(res.crw, "ts")
+#p5 <- plot(res.crw, "qq")
+p6 <- plot(res.crw, "acf")
+
+design <- "CCDD
+           GGHH"
+wrap_plots(C=p1, D=p4, G=p3, H=p6, ncol = 2, design = design) + 
+  plot_annotation(tag_levels = "a")
 ```
 
 
