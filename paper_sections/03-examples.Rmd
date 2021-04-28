@@ -8,15 +8,15 @@ We illustrate the main capabilities of `foieGras` through a series of examples u
 ## 3.1 | Southern Elephant seal - SSM validation with prediction residuals
 We use a subadult male southern elephant seal track included in `foieGras` (`sese1`), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` methods for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}). The plots of predicted states on top of the observations suggests both models yield similar fits (Fig. \ref{fig:ex1}a,b), however, there are marked trends in the time-series of residuals for the `rw` model fit (Fig. \ref{fig:ex1}c) and the `rw` ACF's reveal consistent positive autocorrelation in the prediction residuals (Fig. \ref{fig:ex1}e). The corresponding `crw` prediction residuals show no apparent trends through time and have relatively little autocorrelation (Fig. \ref{fig:ex1}d,f), implying that the `crw` provides a better fit to the data.
 
-```{r ellie SSM, eval=FALSE, echo=FALSE}
-fit.rw <- fit_ssm(sese1, vmax=4, model="rw", time.step=12, verbose=0)
+```{r sese1 SSM, eval=FALSE, echo=FALSE}
+fit.rw <- fit_ssm(sese1, vmax=4, model="rw", time.step=12, control=ssm_control(verbose=0))
 res.rw <- osar(fit.rw)
 
-fit.crw <- fit_ssm(sese1, vmax=4, model="crw", time.step=12, verbose=0)
+fit.crw <- fit_ssm(sese1, vmax=4, model="crw", time.step=12, control=ssm_control(verbose=0))
 res.crw <- osar(fit.crw)
 ```
 
-```{r ex1, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=6, cache=TRUE, fig.cap="\\label{fig:ex1} Selected diagnostic plots for assessing `rw` (a,c,e) and `crw` (b,d,f) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function."}
+```{r ex1, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex1} Selected diagnostic plots for assessing `rw` (a,c,e) and `crw` (b,d,f) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function."}
 
 load("../data/ex1.RData")
 
@@ -42,6 +42,18 @@ wrap_plots(A=pA, B=pB, C=p1, D=p4, G=p3, H=p6, ncol = 2, design = design) +
 
 
 ## 3.3 | Southern elephants seals - behavioural inference and simulation
-Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks.
+Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. 
+
+```{r ex2, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex2} Inferred move persistence, $\\gamma_t$, along southern elephant seal tracks. Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. Plot generated using `fmap`."}
+
+fit <- fit_ssm(sese, vmax=4, model="crw", time.step=24, control=ssm_control(verbose=0, se=FALSE))
+
+fmp <- fit_mpm(fit, what = "predicted", model = "jmpm", control = mpm_control(verbose = 0))
+
+fmap(fit, fmp, what = "p", crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs", pal="Cividis")
+
+```
+
+
 
 ## 3.x | Extending the behavioural model using `mpmm`
