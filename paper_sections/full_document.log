@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  28 APR 2021 08:44
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  28 APR 2021 18:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1062,24 +1062,26 @@ File: ../figures/ex1-1.pdf Graphic file (type pdf)
 <use ../figures/ex1-1.pdf>
 File: ../figures/ex2-1.pdf Graphic file (type pdf)
 <use ../figures/ex2-1.pdf>
-[4] [5] [6]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 603.
-[7]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 603.
+File: ../figures/ex2-2.pdf Graphic file (type pdf)
+<use ../figures/ex2-2.pdf>
+[4] [5] [6] [7] [8]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 596.
+[9]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 596.
 (./full_document.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 603.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 603.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 596.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 596.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 20007 strings out of 479418
- 352473 string characters out of 5884586
- 812034 words of memory out of 5000000
- 37209 multiletter control sequences out of 15000+600000
+ 20012 strings out of 479418
+ 352601 string characters out of 5884586
+ 810729 words of memory out of 5000000
+ 37213 multiletter control sequences out of 15000+600000
  536533 words of font info for 81 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 59i,11n,121p,812b,448s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 59i,11n,121p,812b,442s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on full_document.pdf (7 pages).
+Output written on full_document.pdf (9 pages).
