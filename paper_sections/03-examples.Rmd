@@ -50,11 +50,10 @@ fit <- fit_ssm(sese, vmax=4, model="crw", time.step=24, control=ssm_control(verb
 
 fmp <- fit_mpm(fit, what = "predicted", model = "jmpm", control = mpm_control(verbose = 0))
 
+plot(fmp, pages = 1, ncol=2, ask=0)
+
 fmap(fit, fmp, what = "p", crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs", pal="Cividis")
 
-locs <- join(fit, fmp, what.ssm = "p", as_sf = FALSE)
-
-ggplot(locs, aes(s, g)) + geom_point() + facet_wrap(~ id, scales = "free_x")
 
 
 ```
