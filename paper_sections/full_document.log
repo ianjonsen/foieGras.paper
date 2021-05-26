@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  20 MAY 2021 10:20
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  26 MAY 2021 08:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1061,10 +1061,10 @@ LaTeX Font Info:    Font shape `TU/lmtt/bx/sc' in size <10.95> not available
 File: ../figures/ex1-1.pdf Graphic file (type pdf)
 <use ../figures/ex1-1.pdf>
 [4] [5]
-File: ../figures/ex2-1.pdf Graphic file (type pdf)
-<use ../figures/ex2-1.pdf>
-File: ../figures/ex2-2.pdf Graphic file (type pdf)
-<use ../figures/ex2-2.pdf>
+File: ../figures/ex3-1.pdf Graphic file (type pdf)
+<use ../figures/ex3-1.pdf>
+File: ../figures/ex3-2.pdf Graphic file (type pdf)
+<use ../figures/ex3-2.pdf>
 [6] [7]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 601.
 [8]
