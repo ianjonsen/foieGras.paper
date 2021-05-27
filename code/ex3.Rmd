@@ -1,0 +1,70 @@
+---
+title: "ex3_code"
+author: "ian jonsen"
+date: "26/05/2021"
+output: html_document
+---
+
+```{r knitr_setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+require(tidyverse, quietly = TRUE)
+require(foieGras, quietly = TRUE)
+```
+
+### simulate `mpm` and `2-state crw` tracks & fit `rw` and `crw` SSM's
+```{r simulate data, eval=FALSE}
+## mpm tracks
+smpm <- lapply(1:20,
+               function(i) {
+                 sim(
+                   N = 500,
+                   ts = 6,
+                   model = "mpm",
+                   sigma_g = 0.25,
+                   sigma = c(5, 3),
+                   rho_p = 0.67,
+                   error = "kf",
+                   tdist = "gamma"
+                 ) %>% mutate(id = i) %>%
+                   select(id, everything())
+               }) %>%
+  do.call(rbind, .)
+
+## 2-state crw tracks
+s2crw <- lapply(1:20,
+               function(i) {
+                 sim(
+                   N = 500,
+                   ts = 6,
+                   model = "crw",
+                   D = c(1, 0.1),
+                   alpha = c(0.95, 0.9),
+                   error = "kf",
+                   tdist = "gamma"
+                 ) %>% mutate(id = i) %>%
+                   select(id, everything())
+               }) %>%
+  do.call(rbind, .)
+
+## rw ssm fits
+fmpm.rw <- fit_ssm(smpm %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="rw", 
+                   time.step=12)
+f2crw.rw <- fit_ssm(s2crw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="rw", 
+                   time.step=12)
+## crw ssm fits
+fmpm.crw <- fit_ssm(smpm %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="crw", 
+                   time.step=12)
+f2crw.crw <- fit_ssm(s2crw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="crw", 
+                   time.step=12)
+
+save(smpm, s2crw, fmpm.rw, f2crw.rw, fmpm.crw, f2crw.crw, 
+     file = "data/ex3.RData", compress = "xz")
+```
+
