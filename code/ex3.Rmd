@@ -49,22 +49,131 @@ s2crw <- lapply(1:20,
                }) %>%
   do.call(rbind, .)
 
+## crw tracks
+scrw <- lapply(1:20,
+               function(i) {
+                 sim(
+                   N = 500,
+                   ts = 6,
+                   model = "crw",
+                   D = 1,
+                   error = "kf",
+                   tdist = "gamma"
+                 ) %>% mutate(id = i) %>%
+                   select(id, everything())
+               }) %>%
+  do.call(rbind, .)
+
+## rw tracks
+srw <- lapply(1:20,
+               function(i) {
+                 sim(
+                   N = 500,
+                   ts = 6,
+                   model = "rw",
+                   sigma = c(5, 3),
+                   rho_p = 0.67,
+                   error = "kf",
+                   tdist = "gamma"
+                 ) %>% mutate(id = i) %>%
+                   select(id, everything())
+               }) %>%
+  do.call(rbind, .)
+
 ## rw ssm fits
 fmpm.rw <- fit_ssm(smpm %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
                    model="rw", 
-                   time.step=12)
+                   time.step=12,
+                   verbose=0)
 f2crw.rw <- fit_ssm(s2crw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
                    model="rw", 
-                   time.step=12)
+                   time.step=12,
+                   verbose=0)
+fcrw.rw <- fit_ssm(scrw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="rw", 
+                   time.step=12,
+                   verbose=0)
+frw.rw <- fit_ssm(srw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="rw", 
+                   time.step=12,
+                   verbose=0)
+
 ## crw ssm fits
 fmpm.crw <- fit_ssm(smpm %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
                    model="crw", 
-                   time.step=12)
+                   time.step=12,
+                   verbose=0)
 f2crw.crw <- fit_ssm(s2crw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
                    model="crw", 
-                   time.step=12)
+                   time.step=12,
+                   verbose=0)
+fcrw.crw <- fit_ssm(scrw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="crw", 
+                   time.step=12,
+                   verbose=0)
+frw.crw <- fit_ssm(srw %>% select(id,date,lc,lon,lat,smaj,smin,eor), 
+                   model="crw", 
+                   time.step=12,
+                   verbose=0)
 
-save(smpm, s2crw, fmpm.rw, f2crw.rw, fmpm.crw, f2crw.crw, 
-     file = "data/ex3.RData", compress = "xz")
+save(smpm, s2crw, scrw, srw, fmpm.rw, f2crw.rw, fcrw.rw, frw.rw, fmpm.crw, f2crw.crw, fcrw.crw, frw.crw, file = "../data/ex3.RData", compress = "xz")
+```
+
+```{r calculate fit metrics and plot RMSE, fig.width=5, fig.height=6}
+load("../data/ex3.RData")
+## calculate distance b/w estimated and simulated locations
+
+## merge relevant parts of sim data
+simdat <- bind_rows(smpm %>% select(id, date, x, y, s=g),
+                    s2crw %>% select(id, date, x, y, s=b),
+                    scrw %>% select(id, date, x, y) %>% mutate(s=NA),
+                    srw %>% select(id, date, x, y) %>% mutate(s=NA)) %>%
+  mutate(model = factor(rep(c("mpm","2crw","crw","rw"), each = 10000))) %>%
+  mutate(id = as.character(id))
+
+rw.fits <- bind_rows(grab(fmpm.rw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(f2crw.rw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(fcrw.rw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(frw.rw, "fitted") %>% select(id, date, x.hat=x, y.hat=y)) %>%
+  mutate(smodel = factor(rep(c("mpm","2crw","crw","rw"), c(nrow(grab(fmpm.rw, "f")),
+                                                           nrow(grab(f2crw.rw, "f")),
+                                                           nrow(grab(fcrw.rw, "f")),
+                                                           nrow(grab(frw.rw, "f")))
+                             )))
+
+crw.fits <- bind_rows(grab(fmpm.crw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(f2crw.crw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(fcrw.crw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
+                     grab(frw.crw, "fitted") %>% select(id, date, x.hat=x, y.hat=y)) %>%
+  mutate(smodel = factor(rep(c("mpm","2crw","crw","rw"), c(nrow(grab(fmpm.crw, "f")),
+                                                           nrow(grab(f2crw.crw, "f")),
+                                                           nrow(grab(fcrw.crw, "f")),
+                                                           nrow(grab(frw.crw, "f")))
+                             )))
+
+## merge sim, fitted data & calculate RMSE
+d.rw <- left_join(simdat, rw.fits, by = c("id","date", "model" = "smodel")) 
+d.crw <- left_join(simdat, crw.fits, by = c("id","date", "model" = "smodel"))
+rmse <- bind_rows(d.rw, d.crw) %>%
+  mutate(SSM = factor(rep(c("rw","crw"), c(nrow(d.rw), nrow(d.crw))))) %>%
+  select(id, sim=model, SSM, x, y, x.hat, y.hat) %>%
+  filter(!is.na(x.hat) & !is.na(y.hat)) %>%
+  mutate(dist = sqrt((x - x.hat)^2 + (y - y.hat)^2)) %>%
+  group_by(sim, SSM, id) %>%
+  summarise(rmse = sqrt(mean(dist^2)), .groups = "drop")
+
+saveRDS(rmse, "../data/ex3_rmse.RDS")
+
+## plot overall rmse's
+ggplot(rmse, aes(sim, rmse)) +
+  geom_boxplot() + facet_wrap(~ SSM)
+
+## separate 2crw & mpm tracks by behavioural index, then calc RMSE
+
+
+## select example simulated tracks & fits to plot
+
+
+
 ```
 
