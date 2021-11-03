@@ -81,9 +81,10 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \vspace{-1cm}
 \begin{center}
 \author{
-{\bf Ian D. Jonsen\affmark[1,]\affmark[*] and Toby A. Patterson\affmark[2]}\\ \vspace{2mm}
+{\bf Ian D. Jonsen\affmark[1,]\affmark[*], W. James Grecian\affmark[2], and Toby A. Patterson\affmark[3]}\\ \vspace{2mm}
 \affaddr{\affmark[1]Department of Biological Sciences, Macquarie University, Sydney, NSW, Australia}\\
-\affaddr{\affmark[2]CSIRO Ocean and Atmosphere Research, Hobart, TAS, Australia}\\
+\affaddr{\affmark[2]Scottish Oceans Institute, University of St Andrews, KY16 8LB, United Kingdom}\\
+\affaddr{\affmark[3]CSIRO Ocean and Atmosphere Research, Hobart, TAS, Australia}\\
 \affaddr{\affmark[*]corresponding author, ian.jonsen@mq.edu.au}\\
 }
 \end{center}

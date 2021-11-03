@@ -1,0 +1,38 @@
+---
+title: "ex33_code"
+author: "ian jonsen"
+date: "26/05/2021"
+output: html_document
+---
+
+```{r knitr_setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+require(tidyverse, quietly = TRUE)
+require(foieGras, quietly = TRUE)
+```
+
+### Infer movement persistence along SSM-filtered southern elephant seal tracks
+```{r fit SSM and MPM, eval=FALSE, message=FALSE, warning=FALSE}
+fit <- fit_ssm(sese, vmax=4, model="crw", time.step=24, control=ssm_control(verbose=0, se=FALSE))
+
+fmp <- fit_mpm(fit, what = "predicted", model = "jmpm", control = mpm_control(verbose = 0))
+
+save(fit,fmp, file = "../data/ex33_fmp.RData", compress="xz")
+```
+
+
+### visualise movement persistence in 1-D time-series plots
+```{r mp time-series plots}
+load("../data/ex33_fmp.RData")
+plot(fmp, pages = 1, ncol=2, ask=0, pal = "Cividis")
+
+```
+
+### map movement persistence along animal tracks
+```{r map mp}
+fmap(fit, fmp, what = "p", crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs", pal="Cividis")
+```
+
