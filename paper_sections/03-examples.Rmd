@@ -72,8 +72,8 @@ ggplot(rmse, aes(SSM, nrmse, fill = SSM)) +
 ```
 
 
-## 3.3 | Southern elephants seals - behavioural inference
-Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. 
+## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
+Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin GPS tracks, described in @Phillips:2021. 
 
 ```{r ex3, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex3} Inferred move persistence, $\\gamma_t$, along southern elephant seal tracks. Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. Plot generated using `fmap`."}
 load("../data/ex33_fmp.RData")

@@ -7,7 +7,7 @@ The workflow for `foieGras` is deliberately simple, with much of the usual track
 
 ```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
 func_table <- data.frame(
-  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "plot.fG_mpm", "plot.fG_ssm", "plot.fG_osar"),
+  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "sim_filter", "plot.fG_mpm", "plot.fG_ssm", "plot.fG_osar"),
   Description = c("Fit a Move Persistence Model to location data",
                   "Fit a State-Space Model to location data",
                   "Plot fitted/predicted locations on a map with or without a defined projection",
@@ -15,6 +15,7 @@ func_table <- data.frame(
                   "Estimate One-Step-Ahead Residuals from a foieGras SSM",
                   "Simulate individual animal tracks with Argos LS or KF errors",
                   "Simulate animal tracks from `fG_ssm` fit objects",
+                  "Filter tracks simulated with `simfit` according to similarity criteria",
                   "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
                   "Plot the fit of a foieGras SSM to data",
                   "Plot One-Step-Ahead Residuals from a foieGras SSM"
@@ -65,7 +66,7 @@ The `fit_mpm` function fits a simple move persistence model to estimate a contin
 
 The move persistence model assumes that locations are absent of measurement error and can occur either irregularly or regularly in time. `fit_mpm` takes either a `fG_ssm` data frame as input or a data frame with the follow variables: `id`, `date`, `x`, `y`, where `x` and `y` coordinates can be planar `x,y` or spherical `long,lat`. This latter input format allows the model to be fit easily to GPS or other tracking data with negligible measurement error. When the data contain multiple individuals, the default model is fit jointly by assuming all individuals share the same move persistence variance parameter. There is an option to fit the model separately to each individual. The time-series of estimated move persistence with confidence intervals can be visualized by using the generic `plot` function with the resulting `fG_mpm` data frame. Visualization of move persistence along the 2-D tracks can be plotted or mapped by using the `plot` or `fmap` functions, respectively, and supplying both the `fG_mpm` and `fG_ssm` nested data frames. When using `fit_mpm` on, for example, GPS tracking data that do not require state-space filtering, the movement persistence estimates can be extracted from the `fG_mpm` data frame using the `grab` function and subsequently merged with the observed track data for visualization.
 
-## 2.5 | Simulation - `sim`, `simfit`
+## 2.5 | Simulation - `sim`, `simfit`, `sim_filter`
 Track simulation can be a helpful, yet informal, way of evaluating the degree to which statistical movement models capture essential features of animal movement data [@Michelot:2017]. @Michelot:2016 advocate comparison of simulated tracks from fitted hidden Markov models to the observed tracks as a means of identifying potential weakness in the hidden Markov model formulation. Here, we suggest that the `rw` and `crw` state-space models and the `mpm` model can be fit to track data simulated from different movement processes to evaluate robustness of location and movement persistence estimates to model mis-specification. We illustrate this idea in section 3.x by drawing on flexibility in the `sim` function that allows a variety of movement processes to be simulated.
 
-Simulation is also used frequently to infer habitat availability, e.g., a null model of the distribution of foraging animals in the absence of external drivers, in habitat utilization studies [@Raymond:2015;@Hindell:2020]. The `simfit` function extracts movement parameters from a `fG_ssm` fit object and simulates an arbitrary number of random tracks of the same duration from these parameters. The argument `cpf = TRUE` ensures that the simulated tracks start and end at approximately the same location, thereby simulating a central place forager.
+Simulation is also used frequently to infer habitat availability, e.g., a null model of the distribution of foraging animals in the absence of external drivers, in habitat utilization studies [@Raymond:2015;@Hindell:2020]. The `simfit` function extracts movement parameters from a `fG_ssm` fit object and simulates an arbitrary number of random tracks of the same duration from these parameters. The argument `cpf = TRUE` ensures that the simulated tracks start and end at approximately the same location, thereby simulating a central place forager. Something about `sim_filter` here...
