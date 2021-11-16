@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  16 NOV 2021 14:20
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  16 NOV 2021 15:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1081,21 +1081,20 @@ LaTeX Font Warning: Font shape `TU/lmtt/bx/sc' undefined
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
 (Font)              Font shape `TU/lmtt/b/n' tried instead on input line 178.
 LaTeX Font Info:    Font shape `TU/HelveticaNeueLight(0)/b/n' will be
-(Font)              scaled to size 12.0pt on input line 219.
+(Font)              scaled to size 12.0pt on input line 220.
 [1
 
 ]
 LaTeX Font Info:    Font shape `TU/lmtt/bx/sc' in size <10.95> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 241.
-[2] [3]
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 242.
+[2] [3] [4]
 File: ../figures/ex1-1.pdf Graphic file (type pdf)
 <use ../figures/ex1-1.pdf>
-[4] [5]
 File: ../figures/ex2-1.pdf Graphic file (type pdf)
 <use ../figures/ex2-1.pdf>
 File: ../figures/ex3-1.pdf Graphic file (type pdf)
 <use ../figures/ex3-1.pdf>
-[6] [7] [8] [9] (./full_document.aux)
+[5] [6] [7] [8] [9] [10] (./full_document.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -1103,10 +1102,10 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Here is how much of TeX's memory you used:
  19606 strings out of 476919
  344418 string characters out of 5821839
- 851373 words of memory out of 5000000
+ 850375 words of memory out of 5000000
  39263 multiletter control sequences out of 15000+600000
  410105 words of font info for 96 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 98i,11n,125p,765b,452s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,11n,125p,765b,411s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on full_document.pdf (9 pages).
+Output written on full_document.pdf (10 pages).

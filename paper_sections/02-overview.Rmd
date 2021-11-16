@@ -7,7 +7,7 @@ The workflow for `foieGras` is deliberately simple, with much of the usual track
 
 ```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
 func_table <- data.frame(
-  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "sim_filter", "plot.fG_mpm", "plot.fG_ssm", "plot.fG_osar"),
+  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "sim_filter", "plot.fG_ssm", "plot.fG_osar", "plot.fG_mpm", "plot.fG_sim"),
   Description = c("Fit a Move Persistence Model to location data",
                   "Fit a State-Space Model to location data",
                   "Plot fitted/predicted locations on a map with or without a defined projection",
@@ -16,9 +16,10 @@ func_table <- data.frame(
                   "Simulate individual animal tracks with Argos LS or KF errors",
                   "Simulate animal tracks from `fG_ssm` fit objects",
                   "Filter tracks simulated with `simfit` according to similarity criteria",
-                  "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
                   "Plot the fit of a foieGras SSM to data",
-                  "Plot One-Step-Ahead Residuals from a foieGras SSM"
+                  "Plot One-Step-Ahead Residuals from a foieGras SSM",
+                  "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
+                  "Plot simulated animal tracks"
   )
 )
 
