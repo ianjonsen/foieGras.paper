@@ -1,0 +1,105 @@
+---
+title: "ex33_code"
+author: "ian jonsen"
+date: "10/11/2021"
+output: html_document
+---
+
+```{r knitr_setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+require(tidyverse, quietly = TRUE)
+require(foieGras, quietly = TRUE)
+require(patchwork, quietly = TRUE)
+```
+
+### read and subsample GPS track data to approx. 5 min frequency, on average.
+
+```{r GPS data}
+peng <- readRDS("../data/lp_gps_tracks.RDS")
+
+peng.sub <- peng %>%
+  group_by(id) %>%
+  slice(seq(1, nrow(.), by = 80)) %>%
+  ungroup()
+
+peng.sub %>% 
+  group_by(id) %>%
+  summarise(round(mean(difftime(date, lag(date), units = "mins"), na.rm = TRUE), 2))
+
+```
+
+### fit move persistence model jointly to the 5 sub-sampled penguin GPS tracks
+
+```{r mp time-series}
+fmp <- fit_mpm(peng.sub, model = "jmpm", control = mpm_control(verbose = 0))
+
+```
+
+### fit SSM to 5 penguin GPS tracks to a regular 5-min prediction interval. first sub-sample GPS data, retaining every 2nd observations, which roughly equates to going from 1-sec to 2-sec observation frequency. This makes fitting the SSM a bit more manageable.
+
+```{r fit SSM w 5-min prediction interval, eval=TRUE}
+fit <- peng %>%
+  group_by(id) %>%
+  slice(seq(1, nrow(.), by = 2)) %>%
+  ungroup() %>%
+  mutate(lc = "G") %>%
+  select(id,date,lc,lon,lat) %>%
+  fit_ssm(
+    .,
+    min.dt = 20,
+    model = "crw",
+    time.step = 5 / 60,
+    control = ssm_control(verbose = 0)
+  )
+```
+
+```{r, echo=FALSE, eval=TRUE}
+save(fit, file = "../data/ssm_fit.RData", compress="xz")
+```
+
+### fit move persistence model to SSM-predicted locations @ 5-min intervals
+```{r, echo=FALSE}
+load("../data/ssm_fit.RData")
+```
+
+```{r fit mpm}
+fmp.crw5 <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
+```
+
+### compare estimated move persistence time-series from the two approaches
+
+```{r plots, fig.width=10, fig.height=10}
+
+p1 <- plot(fmp, pages = 1, ncol = 1, ask = FALSE, pal = "Cividis")
+
+p2 <- plot(fmp.crw5, pages = 1, ncol = 1, ask = FALSE, pal = "Cividis")
+
+p1 | p2 + plot_layout(guides = "collect")
+```
+
+
+### compare mapped move persistence estimates
+
+```{r maps, fig.width=10, fig.height=9}
+m1 <- ggplot() +
+  geom_point(data = peng, aes(lon, lat), colour = grey(0.9)) +
+  geom_point(data = peng.sub, aes(lon, lat, colour = grab(fmp, "f")$g)) +
+  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
+  theme_minimal() +
+  guides(colour = guide_colourbar(title = "g"))
+
+m2 <- ggplot() + 
+  geom_point(data = grab(fit, "p"), aes(lon, lat, colour = grab(fmp.crw5, "f")$g)) +
+  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
+  theme_minimal() +
+  guides(colour = guide_colourbar(title = "g"))
+
+m1 + m2 + plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom")
+```
+
+
+
