@@ -13,34 +13,40 @@ knitr::opts_chunk$set(echo = TRUE)
 require(tidyverse, quietly = TRUE)
 require(foieGras, quietly = TRUE)
 require(patchwork, quietly = TRUE)
+require(amt, quietly = TRUE)
+require(ggspatial, quietly = TRUE)
+require(sf, quietly = TRUE)
 ```
 
-### read and subsample GPS track data to approx. 5 min frequency, on average.
+### read and subsample GPS track data to approx. 5 min frequency.
 
-```{r GPS data}
+```{r GPS data, message=FALSE, warning=FALSE}
 peng <- readRDS("../data/lp_gps_tracks.RDS")
 
 peng.sub <- peng %>%
   group_by(id) %>%
-  slice(seq(1, nrow(.), by = 80)) %>%
+  amt::make_track(., lon, lat, date, id=id) %>%
+  amt::track_resample(rate = minutes(5), tolerance = seconds(10)) %>%
+  select(id, date=t_, lon=x_, lat=y_) %>%
   ungroup()
+
 
 peng.sub %>% 
   group_by(id) %>%
-  summarise(round(mean(difftime(date, lag(date), units = "mins"), na.rm = TRUE), 2))
+  summarise(mean_freq = round(mean(difftime(date, lag(date), units = "mins"), na.rm = TRUE), 2))
 
 ```
 
 ### fit move persistence model jointly to the 5 sub-sampled penguin GPS tracks
 
-```{r mp time-series}
+```{r mp time-series, message=FALSE, warning=FALSE}
 fmp <- fit_mpm(peng.sub, model = "jmpm", control = mpm_control(verbose = 0))
 
 ```
 
 ### fit SSM to 5 penguin GPS tracks to a regular 5-min prediction interval. first sub-sample GPS data, retaining every 2nd observations, which roughly equates to going from 1-sec to 2-sec observation frequency. This makes fitting the SSM a bit more manageable.
 
-```{r fit SSM w 5-min prediction interval, eval=TRUE}
+```{r fit SSM w 5-min prediction interval, eval=TRUE, message=FALSE, warning=FALSE}
 fit <- peng %>%
   group_by(id) %>%
   slice(seq(1, nrow(.), by = 2)) %>%
@@ -65,40 +71,58 @@ save(fit, file = "../data/ssm_fit.RData", compress="xz")
 load("../data/ssm_fit.RData")
 ```
 
-```{r fit mpm}
+```{r fit mpm, message=FALSE, warning=FALSE}
 fmp.crw5 <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
 ```
 
-### compare estimated move persistence time-series from the two approaches
+### compare estimated move persistence time-series from the two approaches & map move persistence estimates
 
-```{r plots, fig.width=10, fig.height=10}
+```{r compare mp estimates, fig.width=10, fig.height=10, message=FALSE, warning=FALSE}
 
-p1 <- plot(fmp, pages = 1, ncol = 1, ask = FALSE, pal = "Cividis")
+p1 <- plot(fmp, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none")
 
-p2 <- plot(fmp.crw5, pages = 1, ncol = 1, ask = FALSE, pal = "Cividis")
-
-p1 | p2 + plot_layout(guides = "collect")
-```
+p2 <- plot(fmp.crw5, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none")
 
 
-### compare mapped move persistence estimates
+## compare mapped move persistence estimates
+peng.sub_sf <- peng.sub %>%
+  mutate(g = foieGras::grab(fmp, "f")$g) %>%
+  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
+bb <- sf::st_bbox(peng.sub_sf)
 
-```{r maps, fig.width=10, fig.height=9}
 m1 <- ggplot() +
-  geom_point(data = peng, aes(lon, lat), colour = grey(0.9)) +
-  geom_point(data = peng.sub, aes(lon, lat, colour = grab(fmp, "f")$g)) +
+  ggspatial::annotation_map_tile("cartolight", zoomin=0) +
+  geom_sf(data = peng.sub_sf, aes(colour = g)) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
-  guides(colour = guide_colourbar(title = "g"))
+  guides(colour = guide_colourbar(title = "g")) +
+  coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
+           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
+           crs = 4326) +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
+  theme(legend.position = "bottom")
+
+peng.ssm_sf <- grab(fit, "p") %>%
+  mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
+  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
+bb2 <- sf::st_bbox(peng.ssm_sf)
 
 m2 <- ggplot() + 
-  geom_point(data = grab(fit, "p"), aes(lon, lat, colour = grab(fmp.crw5, "f")$g)) +
+  ggspatial::annotation_map_tile("cartolight", zoomin=0) +
+  geom_sf(data = peng.ssm_sf, aes(colour = g)) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
-  guides(colour = guide_colourbar(title = "g"))
-
-m1 + m2 + plot_layout(guides = "collect") & 
+  guides(colour = guide_colourbar(title = "g")) +
+  coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
+           ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
+           crs = 4326) +
   theme(legend.position = "bottom")
+
+## just map move persistence along tracks
+m1 + m2 +
+  plot_layout(guides = "collect")
 ```
 
 
