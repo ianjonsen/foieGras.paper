@@ -83,7 +83,7 @@ p1 <- plot(fmp, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none")
 
 p2 <- plot(fmp.crw5, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "none")
+  theme(legend.position = "right")
 
 
 ## compare mapped move persistence estimates
@@ -120,9 +120,16 @@ m2 <- ggplot() +
            crs = 4326) +
   theme(legend.position = "bottom")
 
-## just map move persistence along tracks
+## plot move persistence time-series
+p1 / (p2 &
+  theme(legend.position = "bottom"))
+  
+
+## map move persistence along tracks
 m1 + m2 +
-  plot_layout(guides = "collect")
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "a") &
+  theme(legend.position = "bottom") 
 ```
 
 
