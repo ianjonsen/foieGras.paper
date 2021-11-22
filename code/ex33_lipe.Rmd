@@ -74,10 +74,10 @@ save(peng.sub, fmp, fit, fmp.crw5, file = "../data/ex33_lipe.RData", compress="x
 
 ```{r compare mp estimates, fig.width=10, fig.height=10, message=FALSE, warning=FALSE}
 
-p1 <- plot(fmp, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
+p1 <- plot(fmp, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none")
 
-p2 <- plot(fmp.crw5, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
+p2 <- plot(fmp.crw5, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none")
 
 
@@ -95,9 +95,7 @@ m1 <- ggplot() +
   guides(colour = guide_colourbar(title = "g")) +
   coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
            ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
-           crs = 4326) +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
-  theme(legend.position = "none")
+           crs = 4326)
 
 peng.ssm_sf <- grab(fit, "p") %>%
   mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
@@ -113,7 +111,7 @@ m2 <- ggplot() +
   coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
            ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
            crs = 4326) +
-  theme(legend.position = "none")
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
 
 ## plot move persistence time-series
 #p1 / (p2 &
@@ -125,9 +123,10 @@ m2 <- ggplot() +
 #  plot_layout(guides = "collect") +
 #  plot_annotation(tag_levels = "a") &
 #  theme(legend.position = "bottom") 
-(p1 / p2) /
-   (m1 | m2 + theme(legend.position = "bottom")) +
-  plot_layout(heights = c(1,1,5), guides = "collect") +
+(p1 | p2) /
+   (m1 + m2 + plot_layout(ncol=2, guides = "collect") &
+      theme(legend.position = "bottom")) +
+  plot_layout(heights = c(4,6)) +
   plot_annotation(tag_levels = "a") &
   theme(plot.title = element_blank())
 ```

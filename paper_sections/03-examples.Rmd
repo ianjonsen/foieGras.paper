@@ -141,8 +141,7 @@ m1 <- ggplot() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
   coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
            ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
-           crs = 4326) +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
+           crs = 4326)
 
 peng.ssm_sf <- grab(fit, "p") %>%
   mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
@@ -157,7 +156,8 @@ m2 <- ggplot() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
   coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
            ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
-           crs = 4326)
+           crs = 4326) +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
 
 ## plot move persistence time-series & maps
 
