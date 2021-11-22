@@ -73,22 +73,101 @@ ggplot(rmse, aes(SSM, nrmse, fill = SSM)) +
 
 
 ## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
-Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks using the `fit_ssm` and `fit_mpm` functions. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin (_Eudyptula minor_) GPS tracks, described in @Phillips:2021. The GPS tags were programmed such that realized sampling rates were approximately 3 - 4 s, which results in highly autocorrelated location time-series that are not amenable for movement persistence estimation. To alleviate this, we resampled the raw GPS tracks to approximately 5 min resolution using the `resample_track` function from the R package `amt` [@Signer:2019]. We then compare move persistence estimates obtained by fitting directly to the resampled GPS tracks versus those obtained from tracks that were interpolated from the raw GPS data to a regular 5-min interval using the `fit_ssm` function.
+Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks using the `fit_ssm` and `fit_mpm` functions. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The GPS tags were programmed such that realized sampling rates were approximately 3 - 4 s, which results in extremely autocorrelated location time-series that are not amenable for movement persistence estimation. To alleviate this, we resampled the raw GPS data to approximately 5 min resolution using the `resample_track` function from the R package `amt` [@Signer:2019]. We then compare move persistence estimates obtained by fitting directly to the resampled GPS tracks versus those obtained from tracks that were interpolated from the raw GPS data to a fixed 5-min interval using the `fit_ssm` function.
 
-```{r ex3, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex3} Inferred move persistence, $\\gamma_t$, along southern elephant seal tracks. Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. Plot generated using `fmap`."}
+
+
+```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, along southern elephant seal tracks. Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements."}
 load("../data/ex33_fmp.RData")
 
-p1 <- plot(fmp, pages = 1, ncol=2, ask=0, pal = "Cividis")
-
-m1 <- fmap(fit, fmp, what = "p", crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs", pal="Cividis") + 
+p1 <- plot(fmp, pages = 1, ncol=3, ask=0, pal = "Cividis") +
   theme(legend.position = "none")
 
+sf_locs <- grab(fit, what = "p", as_sf = TRUE) %>%
+  mutate(g = grab(fmp, what = "f")$g) %>%
+  sf::st_transform(., crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs") 
+bb <- sf::st_bbox(sf_locs)
+
+m1 <- ggplot(data = sf_locs) +
+  ggspatial::annotation_map_tile("cartolight", zoom=4, alpha=0.5) +
+  geom_sf(aes(colour = g), size = 0.75) +
+  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
+  theme_minimal() +
+  guides(colour = guide_colourbar(title = "g")) +
+  coord_sf(xlim = c(bb["xmin"], bb["xmax"]), 
+           ylim = c(bb["ymin"], bb["ymax"]),
+           crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs") +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
+  theme(legend.position = "none") +
+  xlab(element_blank()) +
+  ylab(element_blank())
+
+label.df <- data.frame(tag = c("a","b","c","d","e"), 
+                        x = c(1.03, 0.03, -0.03, 0.77, 0.53) * 
+                         (bb["xmax"] - bb["xmin"]) + bb["xmin"],
+                        y = c(0.56, 0.08, 0.68, 0.17, 0.3) * 
+                         (bb["ymax"] - bb["ymin"]) + bb["ymin"])
+m1 <- m1 + 
+  geom_text(data = label.df, aes(x,y,label=tag))
+
 p1 / m1 +
-  plot_layout(heights = unit(c(4,4),c("in","null")), guides = "collect")
+  plot_annotation(tag_levels = "a") +
+  plot_layout(heights = c(2,5), guides = "collect") &
+  theme(plot.title = element_blank())
 
 ```
 
+```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, along little penguin GPS tracks. Colour shading of locations as in \\ref{fig:ex33.1}. "}
+load("../data/ex33_lipe.RData")
 
+p1 <- plot(fmp, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none")# &
+#  ylab(element_blank())
+p2 <- plot(fmp.crw5, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none") #&
+#  ylab(element_blank())
+
+## compare mapped move persistence estimates
+peng.sub_sf <- peng.sub %>%
+  mutate(g = foieGras::grab(fmp, "f")$g) %>%
+  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
+bb <- sf::st_bbox(peng.sub_sf)
+
+m1 <- ggplot() +
+  ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
+  geom_sf(data = peng.sub_sf, aes(colour = g)) +
+  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
+  theme_minimal() +
+  guides(colour = guide_colourbar(title = expression(gamma[t]))) +
+  coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
+           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
+           crs = 4326) +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
+
+peng.ssm_sf <- grab(fit, "p") %>%
+  mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
+  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
+bb2 <- sf::st_bbox(peng.ssm_sf)
+
+m2 <- ggplot() + 
+  ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
+  geom_sf(data = peng.ssm_sf, aes(colour = g)) +
+  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
+  theme_minimal() +
+  guides(colour = guide_colourbar(title = expression(gamma[t]))) +
+  coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
+           ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
+           crs = 4326)
+
+## plot move persistence time-series & maps
+
+(p1 | p2) /
+   (m1 + m2 + plot_layout(ncol=2, guides = "collect") &
+      theme(legend.position = "bottom")) +
+  plot_layout(heights = c(4,6)) +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.title = element_blank())
+```
 
 ## 3.4 | Simulating tracks from `foieGras` model fits
 

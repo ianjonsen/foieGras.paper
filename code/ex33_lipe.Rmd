@@ -62,17 +62,12 @@ fit <- peng %>%
   )
 ```
 
-```{r, echo=FALSE, eval=TRUE}
-save(fit, file = "../data/ssm_fit.RData", compress="xz")
-```
-
-### fit move persistence model to SSM-predicted locations @ 5-min intervals
-```{r, echo=FALSE}
-load("../data/ssm_fit.RData")
-```
-
 ```{r fit mpm, message=FALSE, warning=FALSE}
 fmp.crw5 <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
+```
+
+```{r save outputs, echo=FALSE}
+save(peng.sub, fmp, fit, fmp.crw5, file = "../data/ex33_lipe.RData", compress="xz")
 ```
 
 ### compare estimated move persistence time-series from the two approaches & map move persistence estimates
@@ -83,7 +78,7 @@ p1 <- plot(fmp, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none")
 
 p2 <- plot(fmp.crw5, pages = 1, ncol = 5, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "right")
+  theme(legend.position = "none")
 
 
 ## compare mapped move persistence estimates
@@ -102,7 +97,7 @@ m1 <- ggplot() +
            ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
            crs = 4326) +
   ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
 
 peng.ssm_sf <- grab(fit, "p") %>%
   mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
@@ -118,18 +113,23 @@ m2 <- ggplot() +
   coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
            ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
            crs = 4326) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
 
 ## plot move persistence time-series
-p1 / (p2 &
-  theme(legend.position = "bottom"))
+#p1 / (p2 &
+#  theme(legend.position = "bottom"))
   
 
 ## map move persistence along tracks
-m1 + m2 +
-  plot_layout(guides = "collect") +
+#m1 + m2 +
+#  plot_layout(guides = "collect") +
+#  plot_annotation(tag_levels = "a") &
+#  theme(legend.position = "bottom") 
+(p1 / p2) /
+   (m1 | m2 + theme(legend.position = "bottom")) +
+  plot_layout(heights = c(1,1,5), guides = "collect") +
   plot_annotation(tag_levels = "a") &
-  theme(legend.position = "bottom") 
+  theme(plot.title = element_blank())
 ```
 
 
