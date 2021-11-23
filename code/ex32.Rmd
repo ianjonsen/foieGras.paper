@@ -18,7 +18,7 @@ require(foieGras, quietly = TRUE)
 ```{r simulate data, eval=FALSE}
 set.seed(pi)
 ## mpm tracks
-smpm <- lapply(1:25,
+smpm <- lapply(1:50,
                function(i) {
                  sim(
                    N = 300,
@@ -36,7 +36,7 @@ smpm <- lapply(1:25,
   do.call(rbind, .)
 
 ## 2-state crw tracks
-s2crw <- lapply(1:25,
+s2crw <- lapply(1:50,
                function(i) {
                  sim(
                    N = 300,
@@ -53,13 +53,13 @@ s2crw <- lapply(1:25,
   do.call(rbind, .)
 
 ## crw tracks
-scrw <- lapply(1:25,
+scrw <- lapply(1:50,
                function(i) {
                  sim(
                    N = 300,
                    ts = 6,
                    model = "crw",
-                   D = 0.01,
+                   D = 0.02,
                    error = "kf",
                    tdist = "reg"
                  ) %>% mutate(id = i) %>%
@@ -97,18 +97,21 @@ fcrw.crw <- fit_ssm(scrw %>% select(id,date,lc,lon,lat,smaj,smin,eor),
                    time.step=12,
                    control = ssm_control(verbose = 0))
 
-save(smpm, s2crw, scrw, fmpm.rw, f2crw.rw, fcrw.rw, fmpm.crw, f2crw.crw, fcrw.crw, file = "../data/ex32.RData", compress = "xz")
+save(smpm, s2crw, scrw, file = "../data/ex32_simdat.RData", compress = "xz")
+save(fmpm.rw, f2crw.rw, fcrw.rw, fmpm.crw, f2crw.crw, fcrw.crw, file = "../data/ex32_ssmfit.RData", compress = "xz")
 ```
 
-```{r calculate fit metrics and plot RMSE, fig.width=5, fig.height=6}
-load("../data/ex32.RData")
+```{r calculate fit metrics, eval=FALSE}
+load("../data/ex32_simdat.RData")
+load("../data/ex32_ssmfit.RData")
+
 ## calculate distance b/w estimated and simulated locations
 
 ## merge relevant parts of sim data
 simdat <- bind_rows(smpm %>% select(id, date, x, y, s=g),
                     s2crw %>% select(id, date, x, y, s=b),
                     scrw %>% select(id, date, x, y) %>% mutate(s=NA)) %>%
-  mutate(model = factor(rep(c("mpm","2crw","crw"), each = 25*300))) %>%
+  mutate(model = factor(rep(c("mpm","2crw","crw"), each = 50*300))) %>%
   mutate(id = as.character(id))
 
 rw.fits <- bind_rows(grab(fmpm.rw, "fitted") %>% select(id, date, x.hat=x, y.hat=y),
@@ -144,7 +147,12 @@ rmse <- bind_rows(d.rw, d.crw) %>%
             .groups = "drop") %>%
   mutate(sim = factor(as.character(sim), levels=c("crw", "2crw", "mpm"), labels=c("CRW", "2-CRW", "MPM"), ordered=TRUE))
 
-saveRDS(rmse, "../data/ex32_rmse.RDS")
+save(rmse, file = "../data/ex32_rmse.RData", compress = "xz")
+```
+
+
+```{r plot RMSEs, echo=FALSE, fig.width=5, fig.height=6}
+load("../data/ex32_rmse.RData")
 
 ## plot overall rmse's
 ggplot(rmse, aes(SSM, rmse, fill = SSM)) +
@@ -165,7 +173,12 @@ geom_boxplot() +
   xlab("SSM process model") +
   ylab("Mean absolute error") +
   theme(legend.position = "none")
+
 ## select example simulated tracks & fits to plot
+
+```
+
+
 
 
 
