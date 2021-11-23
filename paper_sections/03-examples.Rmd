@@ -75,9 +75,9 @@ ggplot(rmse, aes(SSM, nrmse, fill = SSM)) +
 ## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
 Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence along five southern elephant seal tracks using the `fit_ssm` and `fit_mpm` functions. These data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The GPS tags were programmed such that realized sampling rates were approximately 3 - 4 s, which results in extremely autocorrelated location time-series that are not amenable for movement persistence estimation. To alleviate this, we resampled the raw GPS data to approximately 5 min resolution using the `resample_track` function from the R package `amt` [@Signer:2019]. We then compare move persistence estimates obtained by fitting directly to the resampled GPS tracks versus those obtained from tracks that were interpolated from the raw GPS data to a fixed 5-min interval using the `fit_ssm` function.
 
+ 
 
-
-```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, along southern elephant seal tracks. Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements."}
+```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips, furthest from the colony on Iles Kerguelen, suggesting these bouts of low move persistence are associated with foraging activity."}
 load("../data/ex33_fmp.RData")
 
 p1 <- plot(fmp, pages = 1, ncol=3, ask=0, pal = "Cividis") +
@@ -90,10 +90,10 @@ bb <- sf::st_bbox(sf_locs)
 
 m1 <- ggplot(data = sf_locs) +
   ggspatial::annotation_map_tile("cartolight", zoom=4, alpha=0.5) +
-  geom_sf(aes(colour = g), size = 0.75) +
+  geom_sf(aes(colour = g), size = 0.8) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
-  guides(colour = guide_colourbar(title = "g")) +
+  guides(colourbar = guide_colourbar(title = expression(gamma[t]))) +
   coord_sf(xlim = c(bb["xmin"], bb["xmax"]), 
            ylim = c(bb["ymin"], bb["ymax"]),
            crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs") +
@@ -117,7 +117,7 @@ p1 / m1 +
 
 ```
 
-```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, along little penguin GPS tracks. Colour shading of locations as in \\ref{fig:ex33.1}. "}
+```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-j; grey envelopes are 95 % CI's) and along little penguin GPS tracks (k,l). Colour palette as in \\ref{fig:ex33.1}. Movement persistence was estimated directly from GPS data resampled to approximate 5-min intervals (a-e, k) and estimated from SSM-predicted locations with a regular 5-min interval (f-j, l). Overall movement persistence patterns are similar but note the consistently higher estimates obtained by fitting to the SSM-predicted locations."}
 load("../data/ex33_lipe.RData")
 
 p1 <- plot(fmp, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
@@ -135,7 +135,7 @@ bb <- sf::st_bbox(peng.sub_sf)
 
 m1 <- ggplot() +
   ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
-  geom_sf(data = peng.sub_sf, aes(colour = g)) +
+  geom_sf(data = peng.sub_sf, aes(colour = g), size = 0.8) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
@@ -150,7 +150,7 @@ bb2 <- sf::st_bbox(peng.ssm_sf)
 
 m2 <- ggplot() + 
   ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
-  geom_sf(data = peng.ssm_sf, aes(colour = g)) +
+  geom_sf(data = peng.ssm_sf, aes(colour = g), size = 0.8) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
