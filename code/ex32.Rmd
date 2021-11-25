@@ -143,7 +143,7 @@ rmse <- bind_rows(d.rw, d.crw) %>%
   summarise(md = median(d, na.rm = TRUE),
             mae = mean(dist),
             rmse = sqrt(mean(dist^2)), 
-            nrmse = sqrt(mean(dist^2)) / median(d, na.rm = TRUE), 
+            nrmse = sqrt(mean(dist^2)) / mean(d, na.rm = TRUE), 
             .groups = "drop") %>%
   mutate(sim = factor(as.character(sim), levels=c("crw", "2crw", "mpm"), labels=c("CRW", "2-CRW", "MPM"), ordered=TRUE))
 

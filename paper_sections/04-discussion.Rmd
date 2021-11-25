@@ -3,3 +3,6 @@
 ```{r part_4_premble, include=FALSE}
 #### Code for part 4: Discussion ####
 ```
+
+Ex 3.2
+In a limited way, this provides information on the robustness of the `foieGras` SSM's to different kinds plausible animal movements
