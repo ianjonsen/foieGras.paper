@@ -13,120 +13,70 @@ knitr::opts_chunk$set(echo = TRUE)
 require(tidyverse, quietly = TRUE)
 require(foieGras, quietly = TRUE)
 require(patchwork, quietly = TRUE)
-require(amt, quietly = TRUE)
 require(ggspatial, quietly = TRUE)
 require(sf, quietly = TRUE)
 ```
 
-### read and subsample GPS track data to approx. 5 min frequency.
-
-```{r GPS data, message=FALSE, warning=FALSE}
-peng <- readRDS("../data/lp_gps_tracks.RDS")
-
+#### Read little penguin GPS data and prepare to fit SSM to 6 penguin tracks with a regular 5-min prediction interval. Given the high GPS tag sampling rates, first sub-sample GPS data, retaining every 5th observation, which roughly equates to going from 3-sec to 15-sec observation frequency. This makes fitting the SSM a bit more manageable.
+```{r GPS data & prepare for SSM, message=FALSE, warning=FALSE}
+peng <- readRDS("../data/ex33_lipe_gps_tracks.RDS")
 peng.sub <- peng %>%
   group_by(id) %>%
-  amt::make_track(., lon, lat, date, id=id) %>%
-  amt::track_resample(rate = minutes(5), tolerance = seconds(10)) %>%
-  select(id, date=t_, lon=x_, lat=y_) %>%
-  ungroup()
-
-
-peng.sub %>% 
-  group_by(id) %>%
-  summarise(mean_freq = round(mean(difftime(date, lag(date), units = "mins"), na.rm = TRUE), 2))
-
-```
-
-### fit move persistence model jointly to the 5 sub-sampled penguin GPS tracks
-
-```{r mp time-series, message=FALSE, warning=FALSE}
-fmp <- fit_mpm(peng.sub, model = "jmpm", control = mpm_control(verbose = 0))
-
-```
-
-### fit SSM to 5 penguin GPS tracks to a regular 5-min prediction interval. first sub-sample GPS data, retaining every 2nd observations, which roughly equates to going from 1-sec to 2-sec observation frequency. This makes fitting the SSM a bit more manageable.
-
-```{r fit SSM w 5-min prediction interval, eval=TRUE, message=FALSE, warning=FALSE}
-fit <- peng %>%
-  group_by(id) %>%
-  slice(seq(1, nrow(.), by = 2)) %>%
+  slice(seq(1, nrow(.), by = 5)) %>%
   ungroup() %>%
   mutate(lc = "G") %>%
-  select(id,date,lc,lon,lat) %>%
-  fit_ssm(
-    .,
-    min.dt = 20,
-    model = "crw",
-    time.step = 5 / 60,
-    control = ssm_control(verbose = 0)
-  )
+  select(id,date,lc,lon,lat)
 ```
 
-```{r fit mpm, message=FALSE, warning=FALSE}
-fmp.crw5 <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
+#### Fit the SSM
+```{r fit SSM, message=FALSE, eval=FALSE}
+fit <- fit_ssm(peng.sub, 
+               min.dt = 4,
+               model = "crw",
+               time.step = 5/60,
+               control = ssm_control(verbose = 0)
+               )
 ```
 
-```{r save outputs, echo=FALSE}
-save(peng.sub, fmp, fit, fmp.crw5, file = "../data/ex33_lipe.RData", compress="xz")
+#### Now fit the mpm to the SSM-predicted locations
+```{r fit mpm, message=FALSE, warning=FALSE, eval=FALSE}
+fmp <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
 ```
 
-### compare estimated move persistence time-series from the two approaches & map move persistence estimates
+```{r save outputs, echo=FALSE, eval=FALSE}
+save(peng.sub, fmp, fit, file = "../data/ex33_lipe.RData", compress="xz")
+```
 
-```{r compare mp estimates, fig.width=10, fig.height=10, message=FALSE, warning=FALSE}
+```{r read data & fits, echo=FALSE}
+load("../data/ex33_lipe.RData")
+```
 
-p1 <- plot(fmp, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
+#### Plot move persistence time-series & map move persistence estimates along SSM-predicted tracks
+```{r mp estimates, fig.width=10, fig.height=10, message=FALSE, warning=FALSE}
+
+p <- plot(fmp, pages = 1, ncol = 3, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none")
-
-p2 <- plot(fmp.crw5, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "none")
-
-
-## compare mapped move persistence estimates
-peng.sub_sf <- peng.sub %>%
-  mutate(g = foieGras::grab(fmp, "f")$g) %>%
-  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
-bb <- sf::st_bbox(peng.sub_sf)
-
-m1 <- ggplot() +
-  ggspatial::annotation_map_tile("cartolight", zoomin=0) +
-  geom_sf(data = peng.sub_sf, aes(colour = g)) +
-  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
-  theme_minimal() +
-  guides(colour = guide_colourbar(title = "g")) +
-  coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
-           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
-           crs = 4326)
 
 peng.ssm_sf <- grab(fit, "p") %>%
-  mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
+  mutate(g = foieGras::grab(fmp, "f")$g) %>%
   sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
-bb2 <- sf::st_bbox(peng.ssm_sf)
+bb <- sf::st_bbox(peng.ssm_sf)
 
-m2 <- ggplot() + 
+m <- ggplot() + 
   ggspatial::annotation_map_tile("cartolight", zoomin=0) +
-  geom_sf(data = peng.ssm_sf, aes(colour = g)) +
+  geom_sf(data = subset(peng.ssm_sf, g >= 0.7), aes(colour = g)) +
+  geom_sf(data = subset(peng.ssm_sf, g < 0.7), aes(colour = g)) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
-  guides(colour = guide_colourbar(title = "g")) +
-  coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
-           ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
+  guides(colour = guide_colourbar(title = expression(gamma[t]))) +
+  coord_sf(xlim = extendrange(r=c(bb["xmin"]-0.05, bb["xmax"]), f= 0.1), 
+           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.1),
            crs = 4326) +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
+  theme(legend.position = "right")
 
-## plot move persistence time-series
-#p1 / (p2 &
-#  theme(legend.position = "bottom"))
-  
-
-## map move persistence along tracks
-#m1 + m2 +
-#  plot_layout(guides = "collect") +
-#  plot_annotation(tag_levels = "a") &
-#  theme(legend.position = "bottom") 
-(p1 | p2) /
-   (m1 + m2 + plot_layout(ncol=2, guides = "collect") &
-      theme(legend.position = "bottom")) +
-  plot_layout(heights = c(4,6)) +
+p / m +
+  plot_layout(heights = c(4,8)) +
   plot_annotation(tag_levels = "a") &
   theme(plot.title = element_blank())
 ```

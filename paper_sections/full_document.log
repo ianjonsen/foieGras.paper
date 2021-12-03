@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  1 DEC 2021 13:50
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  3 DEC 2021 13:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1092,9 +1092,6 @@ File: ../figures/ex1-1.pdf Graphic file (type pdf)
 <use ../figures/ex1-1.pdf>
 File: ../figures/ex2-1.pdf Graphic file (type pdf)
 <use ../figures/ex2-1.pdf>
-
-LaTeX Warning: Reference `fig:ex33' on page 5 undefined on input line 558.
-
 [5] [6] [7]
 File: ../figures/ex33.1-1.pdf Graphic file (type pdf)
 <use ../figures/ex33.1-1.pdf>
@@ -1104,15 +1101,12 @@ File: ../figures/ex33.2-1.pdf Graphic file (type pdf)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
  ) 
 Here is how much of TeX's memory you used:
- 19614 strings out of 476919
- 344616 string characters out of 5821839
+ 19613 strings out of 476919
+ 344606 string characters out of 5821839
  855825 words of memory out of 5000000
- 39270 multiletter control sequences out of 15000+600000
+ 39269 multiletter control sequences out of 15000+600000
  410105 words of font info for 96 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  98i,11n,125p,903b,411s stack positions out of 5000i,500n,10000p,200000b,80000s

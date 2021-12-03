@@ -134,9 +134,9 @@ p3 <- ggplot(rmse %>% filter(sim == "MPM"), aes(SSM, nrmse, fill = SSM)) +
 ## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
 Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along five southern elephant seal tracks. We fitted the `crw` SSM with a 24-h prediction interval using `fit_ssm` and then used the predicted values to estimate movement persistence jointly among the 5 seals using `fit_mpm`. The data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The GPS tags were programmed such that realized sampling rates were approximately 3 - 4 s, which results in extremely autocorrelated location time-series that are not amenable for movement persistence estimation. To alleviate this, we resampled the raw GPS data to approximately 5 min resolution using the `resample_track` function from the R package `amt` [@Signer:2019]. We then compare move persistence estimates obtained by fitting directly to the resampled GPS tracks versus those obtained from tracks that were interpolated from the raw GPS data to a fixed 5-min interval using the `fit_ssm` function.
 
-Movement persistence estimates along the quality-controlled southern elephant seal tracks highlight some fundamental differences in movement pattern among the seals. The two seals engaging in pelagic foraging trips (Fig. \ref{fig:ex33.1}a,c and f) had less contrast in their movements with consistently higher $\gamma_t$ estimates compared to the three seals engaging in trips to the fast-ice on the Antarctic shelf (Fig. \ref{fig:ex33.1}b,d-e and f). Although $\gamma_t$'s were higher overall for the pelagically foraging seals, they both spent little time making fast, highly directed movements ($\gamma_t \to 1$) relative to the shelf-foraging seals (\ref{fig:ex33}a,c vs b,d-e). This suggests the pelagically-foraging seals may spend considerable time searching for habitat with suitably high prey density in the highly variable eddy fields between the Subantarctic and Polar Fronts [@Jonsen:2019], whereas prey distribution may be more predictable for seals travelling rapidly and directly to the Antarctic shelf region.
+Movement persistence estimates along the quality-controlled southern elephant seal tracks highlight some fundamental differences in movement pattern among the seals. The two seals engaging in pelagic foraging trips (Fig. \ref{fig:ex33.1}a,c and f) had less contrast in their movements with consistently higher $\gamma_t$ estimates compared to the three seals engaging in trips to the fast-ice on the Antarctic shelf (Fig. \ref{fig:ex33.1}b,d-e and f). Although $\gamma_t$'s were higher overall for the pelagically foraging seals, they both spent little time making fast, highly directed movements ($\gamma_t \to 1$) relative to the shelf-foraging seals (\ref{fig:ex33.1}a,c vs b,d-e). This suggests the pelagically-foraging seals may spend considerable time searching for habitat with suitably high prey density in the highly variable eddy fields between the Subantarctic and Polar Fronts [@Jonsen:2019], whereas prey distribution may be more predictable for seals travelling rapidly and directly to the Antarctic shelf region.
 
-
+Movement persistence estimates from the little penguin tracks had lower overall contrast in comparison to the southern elephant seal tracks (Fig. \ref{fig:ex33.2}). This may reflect a highly opportunistic strategy whereby little penguins forage more or less continuously as they encounter prey along their routes [@Carroll:2016]
 
 ```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips from the colony at Iles Kerguelen, suggesting these bouts of low movement persistence are associated with foraging activity. Due to the stereographic projection used and huge area covered in (f), the scale bar is not accurate in all regions and is indicative only."}
 load("../data/ex33_fmp.RData")
@@ -181,51 +181,30 @@ p1 / m1 +
 ```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-j; grey envelopes are 95 % CI's) and along little penguin GPS tracks (k,l). Colour palette as in \\ref{fig:ex33.1}. Movement persistence was estimated directly from GPS data resampled to approximate 5-min intervals (a-e, k) and estimated from SSM-predicted locations with a regular 5-min interval (f-j, l). Overall movement persistence patterns are similar but note the consistently higher estimates obtained by fitting to the SSM-predicted locations."}
 load("../data/ex33_lipe.RData")
 
-p1 <- plot(fmp, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "none")# &
-#  ylab(element_blank())
-p2 <- plot(fmp.crw5, pages = 1, ncol = 2, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "none") #&
-#  ylab(element_blank())
-
-## compare mapped move persistence estimates
-peng.sub_sf <- peng.sub %>%
-  mutate(g = foieGras::grab(fmp, "f")$g) %>%
-  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
-bb <- sf::st_bbox(peng.sub_sf)
-
-m1 <- ggplot() +
-  ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
-  geom_sf(data = peng.sub_sf, aes(colour = g), size = 0.8) +
-  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
-  theme_minimal() +
-  guides(colour = guide_colourbar(title = expression(gamma[t]))) +
-  coord_sf(xlim = extendrange(r=c(bb["xmin"], bb["xmax"]), f= 0.18), 
-           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.15),
-           crs = 4326)
+p <- plot(fmp, pages = 1, ncol = 3, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none")
 
 peng.ssm_sf <- grab(fit, "p") %>%
-  mutate(g = foieGras::grab(fmp.crw5, "f")$g) %>%
+  mutate(g = foieGras::grab(fmp, "f")$g) %>%
   sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
-bb2 <- sf::st_bbox(peng.ssm_sf)
+bb <- sf::st_bbox(peng.ssm_sf)
 
-m2 <- ggplot() + 
-  ggspatial::annotation_map_tile("cartolight", zoomin=0, alpha=0.5) +
-  geom_sf(data = peng.ssm_sf, aes(colour = g), size = 0.8) +
+m <- ggplot() + 
+  ggspatial::annotation_map_tile("cartolight", zoomin=0) +
+  geom_sf(data = subset(peng.ssm_sf, g >= 0.7), aes(colour = g)) +
+  geom_sf(data = subset(peng.ssm_sf, g < 0.7), aes(colour = g)) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
-  coord_sf(xlim = extendrange(r=c(bb2["xmin"], bb2["xmax"]), f= 0.18), 
-           ylim = extendrange(r=c(bb2["ymin"], bb2["ymax"]), f= 0.15),
+  coord_sf(xlim = extendrange(r=c(bb["xmin"]-0.05, bb["xmax"]), f= 0.1), 
+           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.1),
            crs = 4326) +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br"))
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
+  theme(legend.position = "right")
 
-## plot move persistence time-series & maps
-
-(p1 | p2) /
-   (m1 + m2 + plot_layout(ncol=2, guides = "collect") &
-      theme(legend.position = "bottom")) +
-  plot_layout(heights = c(4,6)) +
+## plot movement persistence 1-D time-series and map along 2-D tracks
+p / m +
+  plot_layout(heights = c(4,8)) +
   plot_annotation(tag_levels = "a") &
   theme(plot.title = element_blank())
 ```
