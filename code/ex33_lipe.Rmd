@@ -17,20 +17,10 @@ require(ggspatial, quietly = TRUE)
 require(sf, quietly = TRUE)
 ```
 
-#### Read little penguin GPS data and prepare to fit SSM to 6 penguin tracks with a regular 5-min prediction interval. Given the high GPS tag sampling rates, first sub-sample GPS data, retaining every 5th observation, which roughly equates to going from 3-sec to 15-sec observation frequency. This makes fitting the SSM a bit more manageable.
-```{r GPS data & prepare for SSM, message=FALSE, warning=FALSE}
+#### Read little penguin GPS data and fit SSM to 5 penguin tracks with a regular 5-min prediction interval. 
+```{r GPS data & fit SSM, message=FALSE, warning=FALSE, eval=TRUE}
 peng <- readRDS("../data/ex33_lipe_gps_tracks.RDS")
-peng.sub <- peng %>%
-  group_by(id) %>%
-  slice(seq(1, nrow(.), by = 5)) %>%
-  ungroup() %>%
-  mutate(lc = "G") %>%
-  select(id,date,lc,lon,lat)
-```
-
-#### Fit the SSM
-```{r fit SSM, message=FALSE, eval=FALSE}
-fit <- fit_ssm(peng.sub, 
+fit <- fit_ssm(peng, 
                min.dt = 4,
                model = "crw",
                time.step = 5/60,
@@ -39,19 +29,20 @@ fit <- fit_ssm(peng.sub,
 ```
 
 #### Now fit the mpm to the SSM-predicted locations
-```{r fit mpm, message=FALSE, warning=FALSE, eval=FALSE}
+```{r fit mpm, message=FALSE, warning=FALSE, eval=TRUE}
 fmp <- fit_mpm(fit, what="p", model = "jmpm", control = mpm_control(verbose = 0))
 ```
 
-```{r save outputs, echo=FALSE, eval=FALSE}
-save(peng.sub, fmp, fit, file = "../data/ex33_lipe.RData", compress="xz")
+```{r save outputs, echo=FALSE, eval=TRUE}
+save(peng, fit, fmp, file = "../data/ex33_lipe.RData", compress="xz")
 ```
 
-```{r read data & fits, echo=FALSE}
+```{r read data & fits, echo=TRUE}
 load("../data/ex33_lipe.RData")
 ```
 
-#### Plot move persistence time-series & map move persistence estimates along SSM-predicted tracks
+
+#### Plot move persistence time-series for 5-min prediction interval & map move persistence estimates along SSM-predicted tracks
 ```{r mp estimates, fig.width=10, fig.height=10, message=FALSE, warning=FALSE}
 
 p <- plot(fmp, pages = 1, ncol = 3, ask = FALSE, pal = "Cividis") &
@@ -64,8 +55,8 @@ bb <- sf::st_bbox(peng.ssm_sf)
 
 m <- ggplot() + 
   ggspatial::annotation_map_tile("cartolight", zoomin=0) +
-  geom_sf(data = subset(peng.ssm_sf, g >= 0.7), aes(colour = g)) +
-  geom_sf(data = subset(peng.ssm_sf, g < 0.7), aes(colour = g)) +
+  geom_sf(data = subset(peng.ssm_sf, g >= 0.5), aes(colour = g)) +
+  geom_sf(data = subset(peng.ssm_sf, g < 0.5), aes(colour = g)) +
   scale_colour_viridis_c(option = "E", limits = c(0,1)) +
   theme_minimal() +
   guides(colour = guide_colourbar(title = expression(gamma[t]))) +
@@ -73,7 +64,8 @@ m <- ggplot() +
            ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.1),
            crs = 4326) +
   ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
-  theme(legend.position = "right")
+  theme(legend.position = "none") +
+  facet_wrap(~ id, ncol = 3)
 
 p / m +
   plot_layout(heights = c(4,8)) +

@@ -3,10 +3,10 @@
 ```{r part_3_premble, include=FALSE}
 #### Code for part 3: Examples ####
 ```
-We illustrate the main capabilities of `foieGras` through a series of examples using real and simulated tracking data. These examples are for demonstration purposes and not intended as a comprehensive guide for conducting animal tracking data quality control or analysis with `foieGras`. Complete code for reproducing the examples and for gaining a deeper understanding of `foieGras` functions are provided as supplements.
+We illustrate the main capabilities of `foieGras` through a series of examples using real and simulated tracking data. These examples are for demonstration purposes and not intended as a comprehensive guide for conducting analyses with `foieGras`. Complete code for reproducing the examples and for gaining a deeper understanding of `foieGras` functions are provided as supplements.
 
 ## 3.1 | Southern Elephant seal - SSM validation with prediction residuals
-We use a subadult male southern elephant seal track included in `foieGras` (`sese1`), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` method for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}). 
+We use a subadult male southern elephant seal track included in `foieGras` (`sese1`), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. The data are temporally irregular Argos Least-Squares based locations, 73 \% of which are in the poorest location quality classes: A and B. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` method for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}). 
 
 The plots of predicted states on top of the observations suggests both models yield similar fits (Fig. \ref{fig:ex1}a,b), however, there are marked trends in the time-series of residuals for the `rw` model fit (Fig. \ref{fig:ex1}c) and the `rw` ACF's reveal consistent positive autocorrelation in the prediction residuals (Fig. \ref{fig:ex1}e). The corresponding `crw` prediction residuals show no apparent trends through time and have relatively little autocorrelation (Fig. \ref{fig:ex1}d,f), implying that the `crw` provides a better fit to the data.
 
@@ -132,36 +132,38 @@ p3 <- ggplot(rmse %>% filter(sim == "MPM"), aes(SSM, nrmse, fill = SSM)) +
 
 
 ## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
-Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along five southern elephant seal tracks. We fitted the `crw` SSM with a 24-h prediction interval using `fit_ssm` and then used the predicted values to estimate movement persistence jointly among the 5 seals using `fit_mpm`. The data can be accessed in `foieGras` via the call: `data(sese, package = 'foieGras')`. To illustrate how the method can accommodate other types of animal tracking data, we also infer movement persistence along five little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The GPS tags were programmed such that realized sampling rates were approximately 3 - 4 s, which results in extremely autocorrelated location time-series that are not amenable for movement persistence estimation. To alleviate this, we resampled the raw GPS data to approximately 5 min resolution using the `resample_track` function from the R package `amt` [@Signer:2019]. We then compare move persistence estimates obtained by fitting directly to the resampled GPS tracks versus those obtained from tracks that were interpolated from the raw GPS data to a fixed 5-min interval using the `fit_ssm` function.
+Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along five southern elephant seal tracks. We fitted the `crw` SSM with a 24-h prediction interval using `fit_ssm` and assuming bivariate normal location measurement errors consistent with Argos Least-Squares-derived locations [@Jonsen:2020]. We used the SSM-predicted locations to estimate movement persistence jointly among the 5 seals using `fit_mpm` and visualise the behavioural index along the seals' tracks. The data can be accessed in `foieGras` via `data(sese, package = 'foieGras')`. As the estimation of $\gamma_t$ is sensitive to choice of time scale, we examined the influence of different prediction intervals (1 - 20 min) on the ability of the movement persistence model to resolve changes in movement pattern along the penguin tracks.
+
+To illustrate how the method can accommodate other types of animal tracking data, we also infer $\gamma_t$ along six little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The data are temporally irregular GPS locations that are assumed to have minimal measurement error. We fitted the `crw` SSM to predict temporally regular locations at 5-min intervals, assuming consistently small bivariate normal location measurement errors (ie. $\pm$ 10 m sd).
 
 Movement persistence estimates along the quality-controlled southern elephant seal tracks highlight some fundamental differences in movement pattern among the seals. The two seals engaging in pelagic foraging trips (Fig. \ref{fig:ex33.1}a,c and f) had less contrast in their movements with consistently higher $\gamma_t$ estimates compared to the three seals engaging in trips to the fast-ice on the Antarctic shelf (Fig. \ref{fig:ex33.1}b,d-e and f). Although $\gamma_t$'s were higher overall for the pelagically foraging seals, they both spent little time making fast, highly directed movements ($\gamma_t \to 1$) relative to the shelf-foraging seals (\ref{fig:ex33.1}a,c vs b,d-e). This suggests the pelagically-foraging seals may spend considerable time searching for habitat with suitably high prey density in the highly variable eddy fields between the Subantarctic and Polar Fronts [@Jonsen:2019], whereas prey distribution may be more predictable for seals travelling rapidly and directly to the Antarctic shelf region.
 
-Movement persistence estimates from the little penguin tracks had lower overall contrast in comparison to the southern elephant seal tracks (Fig. \ref{fig:ex33.2}). This may reflect a highly opportunistic strategy whereby little penguins forage more or less continuously as they encounter prey along their routes [@Carroll:2016]
+Movement persistence estimates from the little penguin tracks 
 
-```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips from the colony at Iles Kerguelen, suggesting these bouts of low movement persistence are associated with foraging activity. Due to the stereographic projection used and huge area covered in (f), the scale bar is not accurate in all regions and is indicative only."}
+had lower overall contrast (Fig. \ref{fig:ex33.2}) in comparison to those from the southern elephant seal tracks (Fig. \ref{fig:ex33.1}). This may reflect a highly opportunistic foraging strategy whereby little penguins forage more or less continuously as they encounter prey along their routes [@Carroll:2016], resulting in less pronounced periods of highly restricted movements that are often associated with intense foraging activity.
+
+```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=7, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips from the colony at Iles Kerguelen, suggesting these bouts of low movement persistence are associated with foraging activity. Due to the stereographic projection used and huge area covered in (f), the scale bar is not accurate in all regions and is indicative only."}
 load("../data/ex33_fmp.RData")
 
-p1 <- plot(fmp, pages = 1, ncol=3, ask=0, pal = "Cividis") +
+p1 <- plot(fmp, pages = 1, ncol=3, ask=0) &
   theme(legend.position = "none")
+
+m1 <- fmap(fit, 
+           fmp, 
+           what = "p", 
+           crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs",
+           map_type = "cartolight",
+           zoom = 4,
+           alpha = 0.5) +
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
+  theme(legend.position = c(0.88,0.9), legend.direction = "horizontal")
 
 sf_locs <- grab(fit, what = "p", as_sf = TRUE) %>%
   mutate(g = grab(fmp, what = "f")$g) %>%
-  sf::st_transform(., crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs") 
+  sf::st_transform(., crs = m1$coordinates$crs)
 bb <- sf::st_bbox(sf_locs)
-
-m1 <- ggplot(data = sf_locs) +
-  ggspatial::annotation_map_tile("cartolight", zoom=4, alpha=0.5) +
-  geom_sf(aes(colour = g), size = 0.8) +
-  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
-  theme_minimal() +
-  guides(colourbar = guide_colourbar(title = expression(gamma[t]))) +
-  coord_sf(xlim = c(bb["xmin"], bb["xmax"]), 
-           ylim = c(bb["ymin"], bb["ymax"]),
-           crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs") +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
-  theme(legend.position = "none") +
-  xlab(element_blank()) +
-  ylab(element_blank())
 
 label.df <- data.frame(tag = c("a","b","c","d","e"), 
                         x = c(1.03, 0.03, -0.03, 0.77, 0.53) * 
@@ -173,40 +175,55 @@ m1 <- m1 +
 
 p1 / m1 +
   plot_annotation(tag_levels = "a") +
-  plot_layout(heights = c(2,5), guides = "collect") &
+  plot_layout(heights = c(1.5,3)) &
   theme(plot.title = element_blank())
 
 ```
 
-```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-j; grey envelopes are 95 % CI's) and along little penguin GPS tracks (k,l). Colour palette as in \\ref{fig:ex33.1}. Movement persistence was estimated directly from GPS data resampled to approximate 5-min intervals (a-e, k) and estimated from SSM-predicted locations with a regular 5-min interval (f-j, l). Overall movement persistence patterns are similar but note the consistently higher estimates obtained by fitting to the SSM-predicted locations."}
+```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=9, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-f; grey envelopes are 95 % CI's) and along little penguin GPS tracks (g). Colour palette as in \\ref{fig:ex33.1}. Movement persistence was  estimated from SSM-predicted locations with a regular 5-min interval."}
 load("../data/ex33_lipe.RData")
 
-p <- plot(fmp, pages = 1, ncol = 3, ask = FALSE, pal = "Cividis") &
-  theme(legend.position = "none")
+p <- plot(fmp, ncol = 1, pages = 1, ask = FALSE, pal = "Cividis") &
+  theme(legend.position = "none",
+        plot.title = element_blank())
 
-peng.ssm_sf <- grab(fit, "p") %>%
-  mutate(g = foieGras::grab(fmp, "f")$g) %>%
-  sf::st_as_sf(., coords = c("lon","lat"), crs = 4326)
+peng.ssm_sf <- foieGras::grab(fit, "p", as_sf = TRUE) %>%
+  mutate(g = foieGras::grab(fmp, "f")$g) 
 bb <- sf::st_bbox(peng.ssm_sf)
 
-m <- ggplot() + 
-  ggspatial::annotation_map_tile("cartolight", zoomin=0) +
-  geom_sf(data = subset(peng.ssm_sf, g >= 0.7), aes(colour = g)) +
-  geom_sf(data = subset(peng.ssm_sf, g < 0.7), aes(colour = g)) +
-  scale_colour_viridis_c(option = "E", limits = c(0,1)) +
-  theme_minimal() +
-  guides(colour = guide_colourbar(title = expression(gamma[t]))) +
-  coord_sf(xlim = extendrange(r=c(bb["xmin"]-0.05, bb["xmax"]), f= 0.1), 
-           ylim = extendrange(r=c(bb["ymin"], bb["ymax"]), f= 0.1),
-           crs = 4326) +
+m <- foieGras::fmap(fit, 
+                    fmp, 
+                    what = "p", 
+                    map_type = "cartolight", 
+                    zoomin = 1, 
+                    size = 0.8, 
+                    ext.rng = c(0.4, 0.05),
+                    alpha = 0.7) +
   ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
-  theme(legend.position = "right")
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  theme(legend.position = c(0.92,0.88))
+
+label.df <- data.frame(tag = c("a","b","c","d","e"), 
+                        x = c(0.1, 0.8, -0.05, 0.53, 0.9) * 
+                         (bb["xmax"] - bb["xmin"]) + bb["xmin"],
+                        y = c(0.9, 0.225, 0.5, 0.03, 0.6) * 
+                         (bb["ymax"] - bb["ymin"]) + bb["ymin"])
+m <- m + 
+  geom_text(data = label.df, aes(x,y,label=tag))
 
 ## plot movement persistence 1-D time-series and map along 2-D tracks
-p / m +
-  plot_layout(heights = c(4,8)) +
+design <- "
+166
+266
+366
+466
+566"
+
+p + m +
+  plot_layout(design = design, guides = "keep") +
   plot_annotation(tag_levels = "a") &
-  theme(plot.title = element_blank())
+  theme(plot.tag = element_text(size = 11))
 ```
 
 ## 3.4 | Simulating tracks from `foieGras` model fits

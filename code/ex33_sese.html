@@ -181,6 +181,15 @@ fmp &lt;- fit_mpm(fit, what = &quot;predicted&quot;, model = &quot;jmpm&quot;, c
 
 save(fit,fmp, file = &quot;../data/ex33_fmp.RData&quot;, compress=&quot;xz&quot;)</code></pre>
 </div>
+<div id="use-alternate-prediction-intervals-to-assess-influence-on-movement-persistence-estimation" class="section level3">
+<h3>Use alternate prediction intervals to assess influence on movement persistence estimation</h3>
+<pre class="r"><code>ts &lt;- c(6,12,18,36,48)
+fmp.pi &lt;- lapply(1:5, function(i) {
+  f &lt;- fit_ssm(sese, vmax=4, model=&quot;crw&quot;, time.step=ts[i], control=ssm_control(verbose=0, se=FALSE))
+  fit_mpm(f, what = &quot;predicted&quot;, model = &quot;jmpm&quot;, control = mpm_control(verbose = 0))
+})</code></pre>
+<pre class="r"><code>saveRDS(fmp.pi, file = &quot;../data/ex33_fmp.pi.RDS&quot;, compress=&quot;xz&quot;)</code></pre>
+</div>
 <div id="visualise-movement-persistence-in-1-d-time-series-plots" class="section level3">
 <h3>visualise movement persistence in 1-D time-series plots</h3>
 <pre class="r"><code>load(&quot;../data/ex33_fmp.RData&quot;)
