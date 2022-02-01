@@ -3,5 +3,7 @@
 ```{r part_1_premble, include=FALSE}
 #### Code for part 1: Introduction ####
 ```
+Animal biotelemetry as a discipline has matured, with telemetry data becoming essential for understanding the behaviour and social interactions, foraging ecology, resource selection, distribution and population dynamics of highly mobile and/or cryptic species [@Hooten:2017]. The use of animal-borne sensors have also gained prominence as a cost-effective approach for observing the World's oceans that compliments more traditional autonomous, ship-based and satellite observing platforms [@McMahon:2021].
+
 The R package `foieGras`, pronounced "*fwah grah*", ...
 
