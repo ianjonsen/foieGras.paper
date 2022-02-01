@@ -1,0 +1,7 @@
+# 1 | Introduction
+
+```{r part_1_premble, include=FALSE}
+#### Code for part 1: Introduction ####
+```
+The R package `foieGras`, pronounced "*fwah grah*", ...
+

@@ -1,0 +1,73 @@
+# 2 | `foieGras` overview
+
+```{r part_2_premble, include=FALSE}
+#### Code for part 2: foieGras Overview ####
+```
+The workflow for `foieGras` is deliberately simple, with much of the usual track data processing checks and formatting handled automatically. The main functions are listed in Table \ref{tab:func_table_kable}. When fitting a model, `foieGras` automatically detects the type of tracking data location quality classes designations that are typical of Argos data and that can be added to the data by the researcher for other types of track data. Based on the location quality classes and other, optional information on observation errors contained in the data, `foieGras` chooses an appropriate measurement error model for each observation. This capability allows for combinations of different tracking data types, e.g., Argos and GPS, in a single input data frame and to be fit in a single state-space model. 
+
+```{r func_table, echo=FALSE,  fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
+func_table <- data.frame(
+  Function = c("fit_mpm", "fit_ssm", "fmap", "grab", "osar", "sim", "simfit", "sim_filter", "plot.fG_ssm", "plot.fG_osar", "plot.fG_mpm", "plot.fG_sim"),
+  Description = c("Fit a Move Persistence Model to location data",
+                  "Fit a State-Space Model to location data",
+                  "Plot fitted/predicted locations on a map with or without a defined projection",
+                  "Extract fitted/predicted/observed locations from a foieGras model, with or without projection information",
+                  "Estimate One-Step-Ahead Residuals from a foieGras SSM",
+                  "Simulate individual animal tracks with Argos LS or KF errors",
+                  "Simulate animal tracks from `fG_ssm` fit objects",
+                  "Filter tracks simulated with `simfit` according to similarity criteria",
+                  "Plot the fit of a foieGras SSM to data",
+                  "Plot One-Step-Ahead Residuals from a foieGras SSM",
+                  "Plot move persistence estimates as 1-D or 2-D (along track) time-series",
+                  "Plot simulated animal tracks"
+  )
+)
+
+```
+
+```{r func_table_kable, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE, purl=FALSE}
+kable(func_table, 
+      format = table_out_format, 
+      caption="Main functions for the R package \\texttt{foieGras}", 
+      booktabs = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, latex_column_spec = ">{\\\\hangindent=2em}p{25em}" ) %>%
+  
+kable_styling(full_width = FALSE)
+```
+
+## 2.1 | Data preparation
+Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a data frame using standard functions such as `read.csv`. The canonical data format for Argos tracks consists of a data frame with 5 columns corresponding to the following named variables: `id` (individual id), `date` (date and time), `lc` (location class), `lon` (longitude), `lat` (latitude). Optionally, an additional 3 columns, `smaj` (semi-major axis), `smin` (semi-minor axis), `eor` (ellipse orientation), providing Argos error ellipse information may be included.
+
+Other types of track data can be accommodated, for example, by including the `lc` column where all `lc = "G"` for GPS data. In this case, measurement error in the GPS locations is assumed to have a standard deviation of 0.1 x Argos class 3 locations (approximately 30 m). Other types of track data can be considered in a similar manner (see the package vignette for further details).
+
+## 2.2 | State-space model fitting - `fit_ssm`
+State-space models are fit using `fit_ssm`. There are a large number of options that can be set in `fit_ssm` (see Suppl for details). We focus only the essential options here:  
+
+- `data` the input data structured as described in **2.1** 
+- `vmax` a maximum threshold speed (ms^-1^) to help identify potential outlier locations 
+- `model` the process model to be used 
+- `time.step` the prediction time interval (h)
+
+The function first invokes an automated data processing stage where the following occurs: 1) data type (Argos Least-Squares, Argos Kalman Filter/Smoother, GPS, or General (e.g., processed light-level geolocations, acoustic telemetry, coded VHF telemetry) is determined; 2) datetimes are converted to POSIXt format, chronological order is ensured, and duplicate datetime records are removed; 3) observations occurring less than `min.dt` seconds after a prior observation are removed; 4) a speed filter [`sda` from the `trip` R package; @Sumner:2009] is used to identify potential outlier locations; 5) locations are projected from spherical lon-lat coordinates to planar x,y coordinates in km. 
+
+The function then fits a state-space model to the processed data, where the process model (currently, either a continuous-time `rw` or a continuous-time `crw`) is specified by the user and the measurement model(s) are selected automatically [see @Jonsen:2020 for model details]. The model is fit by numerical optimization of the likelihood using either the `optim` or `nlminb` R function. The R package `TMB`, Template Model Builder [@Kristensen:2016], is used to compute the gradient function in C++ via reverse-mode auto-differentiation and the Laplace Approximation is used to integrate out the latent states (random effects). Fits to a single versus multiple individuals are handled automatically, with sequential SSM fits occurring in the latter case. No hierarchical or pooled estimation among individuals is currently available. 
+
+`fit_ssm` returns a `foieGras` fit object (a nested data frame with class `fG_ssm`). The outer data frame lists the individual id(s), basic convergence information and a list with class `ssm`. This list contains dense information on the model parameter and state estimates, predictions, processed data, optimizer results, and other diagnostic and contextual information. Users can extract a simple data frame of SSM fitted (location estimates corresponding to the, typically irregular, observation times) or predicted values (locations predicted at regular `time.step` intervals) using the `grab` function. 
+
+## 2.3 | Model checking and visualisation - `osar`, `plot`, `fmap`
+Before using fitted or predicted locations, a model fit should be checked and visualised to confirm that the model adequately describes the data. In linear regression and a variety of analogous methods, goodness-of-fit can be assessed by calculating standard residuals such as Pearson or deviance residuals. There is no simple way to calculate residuals for latent variable models that have non-finite state-spaces and that may be nonlinear, but they can be computed based on iterative forecasts of the model [@Thygesen:2017]. The `osar` function computes one-step-ahead (prediction) residuals and uses the `oneStepPredict` function from the `TMB` R package to make this as efficient as possible. A set of residuals are calculated for the `x` and `y` values corresponding to the fitted values from the SSM and returned as an `fG_osar` object. 
+
+A generic `plot` method provides an easy way to visualise the `fG_osar` residuals. Time-series plots of the prediction residuals can be used to detect temporal changes in goodness-of-fit. Quantile-quantile plots of residuals against standard normal quantiles can be used to detect departures from normality. Sample autocorrelation function plots of the residuals are useful for detecting autocorrelation not accounted for by the model. Assessing residual autocorrelation can be particularly important as Argos locations, for example, are themselves derived from a time-series model [@Lopez:2015] which can introduce additional autocorrelation in the location errors.
+
+State-space model fits to data can also be visualised by using the generic `plot` function on an `fG_ssm` data frame. Options exist to plot fitted or predicted values along with observations as either paired, 1-D time-series or as 2-D tracks with confidence intervals or ellipses, respectively. These plots provide a more intuitive and rapid method for assessing SSM fits to data, however, they do not replace the residual diagnostics. Fitted `fG_ssm` data frames can be mapped using the `fmap` function for single or multiple individuals. Estimated tracks can be displayed with or without confidence ellipses, observations, and/or a projection and maps of single tracks can be coloured by date. 
+
+## 2.4 | Behavioural estimation - `fit_mpm`
+The `fit_mpm` function fits a simple move persistence model to estimate a continuous-valued, time-varying latent variable that indexes changes in movement behaviour [@Jonsen:2019]. This variable measures the autocorrelation in speed and direction between consecutive pairs of movements such that high values correspond to fast, directed movements at one end of the continuum and low values correspond to slow, tortuous movements at the other end. It's important to note that this approach is unlike hidden Markov models [@Michelot:2016;@McClintock:2018] and some state-space models [@Jonsen:2016] as there is no notion of discrete behavioural states that animals periodically switch between. Nonetheless, move persistence can be used to identify objectively places where animals spend disproportionately more or less time, and with extensions be correlated with environment or other covariates (See Examples 3.x).  
+
+The move persistence model assumes that locations are absent of measurement error and can occur either irregularly or regularly in time. `fit_mpm` takes either a `fG_ssm` data frame as input or a data frame with the follow variables: `id`, `date`, `x`, `y`, where `x` and `y` coordinates can be planar `x,y` or spherical `long,lat`. This latter input format allows the model to be fit easily to GPS or other tracking data with negligible measurement error. When the data contain multiple individuals, the default model is fit jointly by assuming all individuals share the same move persistence variance parameter. There is an option to fit the model separately to each individual. The time-series of estimated move persistence with confidence intervals can be visualized by using the generic `plot` function with the resulting `fG_mpm` data frame. Visualization of move persistence along the 2-D tracks can be plotted or mapped by using the `plot` or `fmap` functions, respectively, and supplying both the `fG_mpm` and `fG_ssm` nested data frames. When using `fit_mpm` on, for example, GPS tracking data that do not require state-space filtering, the movement persistence estimates can be extracted from the `fG_mpm` data frame using the `grab` function and subsequently merged with the observed track data for visualization.
+
+## 2.5 | Simulation - `sim`, `simfit`, `sim_filter`
+Track simulation can be a helpful, yet informal, way of evaluating the degree to which statistical movement models capture essential features of animal movement data [@Michelot:2017]. @Michelot:2016 advocate comparison of simulated tracks from fitted hidden Markov models to the observed tracks as a means of identifying potential weakness in the hidden Markov model formulation. Here, we suggest that the `rw` and `crw` state-space models and the `mpm` model can be fit to track data simulated from different movement processes to evaluate robustness of location and movement persistence estimates to model mis-specification. We illustrate this idea in section 3.x by drawing on flexibility in the `sim` function that allows a variety of movement processes to be simulated.
+
+Simulation is also used frequently to infer habitat availability, e.g., a null model of the distribution of foraging animals in the absence of external drivers, in habitat utilization studies [@Raymond:2015;@Hindell:2020]. The `simfit` function extracts movement parameters from a `fG_ssm` fit object and simulates an arbitrary number of random tracks of the same duration from these parameters. The argument `cpf = TRUE` ensures that the simulated tracks start and end at approximately the same location, thereby simulating a central place forager. Something about `sim_filter` here...
