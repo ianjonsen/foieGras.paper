@@ -3,7 +3,15 @@
 ```{r part_1_premble, include=FALSE}
 #### Code for part 1: Introduction ####
 ```
-Animal biotelemetry as a discipline has matured, with telemetry data becoming essential for understanding the behaviour and social interactions, foraging ecology, resource selection, distribution and population dynamics of highly mobile and/or cryptic species [@Hooten:2017]. The use of animal-borne sensors have also gained prominence as a cost-effective approach for observing the World's oceans that compliments more traditional autonomous, ship-based and satellite observing platforms [@McMahon:2021].
+Animal biotelemetry as a discipline has matured, with telemetry data now virtually essential for understanding behaviour and social interactions, foraging ecology, habitat use and population dynamics of mobile and/or cryptic species. Additionally, the sophistication of current telemetry devices enables the use of animal-borne sensors as a cost-effective approach for observing our planet that compliments more traditional observing platforms [@Kays:2015;@Harcourt:2019;@McMahon:2021]. In all these applications, animal biotelemetry requires rigourous quality control procedures to account for common, though not universally present, data issues such as irregularly timed measurements, sensor biases and time-varying errors in location. Some of these issues may be handled by a manufacturer's on-board or subsequent processing and some must be dealt with by researchers using the data.
 
-The R package `foieGras`, pronounced "*fwah grah*", ...
+transition paragraph focusing on analytical methods here...  
+
+transition paragraph focusing on related R packages & defining the foieGras niche here...  
+
+The `foieGras`, pronounced "*fwah grah*", package for R [@RCore:2021] was developed to be as simple and fast to use as possible. The package implements state-space models to conduct quality control on animal (re)location data collected via the Argos satellite [@Argos:2016] and other telemetry systems. The latest stable and fully cross-platform tested version of the package (currently, 1.0.0) is available on the Comprehensive R Archive Network (CRAN), at https://cran.r-project.org/package=foieGras. The latest partially tested stable and development versions are available on the lead author's GitHub repository: https://github.com/ianjonsen/foieGras. 
+
+Here, we describe the main features of `foieGras` and illustrate its use through examples using both real and simulated data. Full R code for each of the examples is provided in the Supporting Information. Additional details on package functions and their use can be found in their help files and in the package's vignettes. 
+
+  
 
