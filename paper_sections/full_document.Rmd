@@ -82,7 +82,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \begin{center}
 \author{
 {\bf Ian D. Jonsen\affmark[1,]\affmark[*], W. James Grecian\affmark[2], Lachlan Phillips\affmark[1], Gemma Carroll\affmark[3], Clive McMahon\affmark[4], Robert G. Harcourt\affmark[1], and Toby A. Patterson\affmark[5]}\\ \vspace{2mm}
-\affaddr{\affmark[1]Department of Biological Sciences, Macquarie University, Sydney, NSW, Australia}\\
+\affaddr{\affmark[1]School of Natural Sciences, Macquarie University, Sydney, NSW, Australia}\\
 \affaddr{\affmark[2]Sea Mammal Research Unit, Scottish Oceans Institute, University of St Andrews, St Andrews, Fife, United Kingdom}\\
 \affaddr{\affmark[3]Environmental Defense Fund, Seattle, WA, United States}\\
 \affaddr{\affmark[4]Sydney Institute of Marine Science, Mosman, NSW, Australia}\\
@@ -118,7 +118,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 We thank Marie Auger-Méthé for contributing original code to the movement persistence models. IDJ acknowledges support from a Macquarie University co-Funded Fellowship and from partners: the US Office of Naval Research, Marine Mammal Program (grant N00014-18-1-2405); the Integrated Marine Observing System (IMOS); Taronga Conservation Society; the Ocean Tracking Network; Birds Canada; and Innovasea/VEMCO. TAP was supported by CSIRO Oceans & Atmosphere internal research funding scheme. The Integrated Marine Observing System (IMOS) supported seal fieldwork. IMOS is a national collaborative research infrastructure, supported by the Australian Government and operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent. Field work at Illes Kerguelen was conducted as part of the IPEV programme N^o^ 109 (PI H. WEIMERSKIRCH) and of the SNO-MEMO programme (PI C. GUINET) in collaboration with IMOS. CTD tags were partly funded by CNES-TOSCA and IMOS. Little penguin fieldwork was supported by an Australian Research Council Linkage grant to IDJ, GC and RGH (LP160100162). All animal tagging procedures approved and executed under the Animal Ethics Committee guidelines of the University of Tasmania (elephant seals), Macquarie University (little penguins), and ... University (species).
 
 # Author's Contributions
-IDJ developed the R package; WJG contributed harp seal data and to the R package; LP, GC, and RGH contributed little penguin data; IDJ and TAP developed the state-space models; IDJ wrote an initial draft of the manuscript with a contribution from WJG; all authors edited the manuscript.
+IDJ developed the R package; WJG contributed harp seal data and to the R package; LP, GC, and RGH contributed little penguin data; CRM and RGH contributed Southern elephant seal data; IDJ and TAP developed the state-space models; IDJ wrote an initial draft of the manuscript with contributions from WJG; all authors edited the manuscript.
 
 # Data Accessibility 
 All code mentioned here is provided in the `foieGras` package for R available on CRAN at \url{https://CRAN.R-project.org/package=foieGras}. The development version of the package is available on GitHub at \url{https://github.com/ianjonsen/foieGras}. Data used in the examples are available at...
@@ -129,6 +129,7 @@ All code mentioned here is provided in the `foieGras` package for R available on
 *Lachlan Phillips* \url{https://orcid.org/0000-0002-7635-2817}  
 *Gemma Carroll* \url{https://orcid.org/0000-0001-7776-0946}  
 *Robert G Harcourt* \url{https://orcid.org/0000-0003-4666-2934}  
+*Clive R McMahon* \url{https://orcid.org/0000-0001-5241-8917}  
 *Toby A Patterson* \url{https://orcid.org/0000-0002-7150-9205}
 
 # References
