@@ -226,3 +226,70 @@ p + m +
 
 ## 3.4 | Simulating tracks from `foieGras` model fits
 
+To illustrate how to simulate tracks from `foieGras` model fits we use a sample of four juvenile harp seals (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step.
+
+From this process model we simulate 50 animal movement paths using `simfit` and use the `grad` argument to constrain the simulated paths to water. These tracks are then filtered based on their similarity to the original path using the `sim_filter` and the top 10% retained (`keep = .1`)(Fig. \ref{fig:ex34}).
+
+In combination, these functions provide a user-friendly method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications.
+
+```{r ex34, echo = FALSE, message = FALSE, results = 'markup', fig.width = 9, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex34} Simulating (a) 50 movement paths from a correlated random walk process model and then (b) filtering those tracks to select the top 10% based on their similarity to the original fitted track (shown in black). "}
+
+locs <- readRDS("../data/ex34.rds")
+fit <- foieGras::fit_ssm(locs, model = "crw", time.step = 12, vmax = 4, control = ssm_control(verbose = 0))
+
+trs <- foieGras::simfit(fit,
+              what = "predicted",
+              reps = 50,
+              grad = readRDS(system.file("extdata/grad.RDS", package = "foieGras")),
+              beta = c(-300, 300))
+
+trs_flt <- foieGras::sim_filter(trs,
+                      keep = .1,
+                      flag = 2)
+
+trs <- trs %>% tidyr::unnest(cols = c(sims)) %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
+trs_flt <- trs_flt %>% tidyr::unnest(cols = c(sims)) %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
+
+plocs <- foieGras::grab(fit, "predicted", as_sf = F)
+plocs_sf <- plocs %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
+
+world_shp <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+
+# To generate a plot with less distortion first define a projection i.e. Lambert Azimuthal Equal Area
+prj = "+proj=laea +lat_0=60 +lon_0=-50 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+p1 <- ggplot() +
+  theme_bw() +
+  geom_sf(aes(), data = world_shp, colour = grey(0.6), fill = grey(0.6)) +
+  geom_sf(aes(colour = factor(rep)), data = trs, size = 0.5) +
+  scale_color_viridis_d(option = "cividis") +
+  geom_sf(aes(), data = plocs_sf, size = 0.5) +
+  coord_sf(xlim = c(-3500000, 5000000), ylim = c(-4500000, 6000000), crs = prj, expand = T) +
+  scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
+  scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
+  facet_wrap(~id, ncol = 2) +
+  theme(legend.position="none")
+
+p2 <- ggplot() +
+  theme_bw() +
+  geom_sf(aes(), data = world_shp, colour = grey(0.6), fill = grey(0.6)) +
+  geom_sf(aes(colour = factor(rep)), size = 0.5, data = trs_flt) +
+  scale_color_viridis_d(option = "cividis") +
+  geom_sf(aes(), data = plocs_sf, size = 0.5) +
+  coord_sf(xlim = c(-3500000, 5000000), ylim = c(-4500000, 6000000), crs = prj, expand = T) +
+  scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
+  scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
+  facet_wrap(~id, ncol = 2) +
+  theme(legend.position="none")
+
+p1 + p2 + plot_annotation(tag_levels = "a") & 
+  theme(plot.tag = element_text(size = 11))
+
+
+
+```
+
+
+
