@@ -1,4 +1,6 @@
 *_cache
+rosm.cache
+code/rosm.cache
 *_files
 full_document.tex
 .DS_Store

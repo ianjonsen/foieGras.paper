@@ -1,13 +1,13 @@
 ---
 title: "`foieGras` an R package for animal movement data: rapid quality control, behavioural estimation and simulation"
 header-includes:
+  - \usepackage{lineno}
   - \usepackage{placeins}
-  - \usepackage{fontspec}
-  - \setmainfont[Ligatures=TeX, BoldFont={Helvetica Neue Medium}, ItalicFont={Helvetica Neue Light Italic}]{Helvetica Neue Light}
+  - \linenumbers
   - \usepackage{sectsty}
   - \sectionfont{\sffamily\large\scshape}
   - \subsectionfont{\sffamily\normalsize\scshape}
-compact-title: TRUE
+compact-title: FALSE
 output:
   pdf_document:
     fig_caption: yes
@@ -17,8 +17,8 @@ output:
         in_header:
           - preamble.sty
 documentclass: "article"
-classoption: "11pt"
-geometry: left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=12pt,a4paper
+classoption: "12pt"
+geometry: left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=12pt,letterpaper
 bibliography: references.bib
 csl: methods-in-ecology-and-evolution.csl
 spacing: double
@@ -44,7 +44,6 @@ knitr::opts_chunk$set(echo = TRUE,
 #### Setup ####
 ## all the packages needed for this tutorial are listed here
 library(foieGras)
-library(mpmm)
 library(ggplot2)
 library(ggthemes)
 library(patchwork)
@@ -54,7 +53,6 @@ library(kableExtra)
 library(knitr)
 library(docxtools)
 library(tibble)
-library(gratia)
 library(latex2exp)
 
 ## set the default theme for ggplot objects to theme_minimal()

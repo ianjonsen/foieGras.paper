@@ -11,127 +11,98 @@ We use a subadult male southern elephant seal track included in `foieGras` (`ses
 The plots of predicted states on top of the observations suggests both models yield similar fits (Fig. \ref{fig:ex1}a,b), however, there are marked trends in the time-series of residuals for the `rw` model fit (Fig. \ref{fig:ex1}c) and the `rw` ACF's reveal consistent positive autocorrelation in the prediction residuals (Fig. \ref{fig:ex1}e). The corresponding `crw` prediction residuals show no apparent trends through time and have relatively little autocorrelation (Fig. \ref{fig:ex1}d,f), implying that the `crw` provides a better fit to the data.
 
 ```{r sese1 SSM, eval=FALSE, echo=FALSE}
-fit.rw <- fit_ssm(sese1, vmax=4, model="rw", time.step=12, control=ssm_control(verbose=0))
-res.rw <- osar(fit.rw)
+fit.rw <- fit_ssm(sese2, vmax=4, model="rw", time.step=12, control=ssm_control(verbose=0))
+res.rw <- osar(fit.rw[1,])
 
-fit.crw <- fit_ssm(sese1, vmax=4, model="crw", time.step=12, control=ssm_control(verbose=0))
-res.crw <- osar(fit.crw)
+fit.crw <- fit_ssm(sese2, vmax=4, model="crw", time.step=12, control=ssm_control(verbose=0))
+res.crw <- osar(fit.crw[1,])
 ```
 
-```{r ex1, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=8, cache=TRUE, fig.cap="\\label{fig:ex1} Selected diagnostic plots for assessing `rw` (a,c,e) and `crw` (b,d,f) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function."}
+```{r ex1, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=6, cache=TRUE, fig.cap="\\label{fig:ex1} Selected diagnostic plots for assessing `rw` (a,c,e) and `crw` (b,d,f) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function."}
 
 load("../data/ex1.RData")
 
-pA <- plot(fit.rw, "p", type = 2, pages=1, ask=0) + 
-  labs(title = element_blank())
-pB <- plot(fit.crw, "p", type = 2, pages=1, ask=0) + 
-  labs(title = element_blank())
+dat <- grab(fit.rw[1,], "d", as_sf = TRUE) |> 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+loc.rw <- grab(fit.rw[1,], "f", as_sf = TRUE) |>
+  sf::st_transform("+proj=stere +lon_0=90 +units=km") 
+line.rw <- loc.rw |>
+  dplyr::group_by(id) |>
+  dplyr::summarise(do_union = FALSE) |>
+  sf::st_cast("MULTILINESTRING")
+loc.crw <- grab(fit.crw[1,], "f", as_sf = TRUE) |>
+  sf::st_transform("+proj=stere +lon_0=90 +units=km") 
+line.crw <- loc.crw |>
+  dplyr::group_by(id) |>
+  dplyr::summarise(do_union = FALSE) |>
+  sf::st_cast("MULTILINESTRING")
+
+pA <- ggplot() +
+  geom_sf(data = dat, 
+             col = "dodgerblue", 
+             size = 2) +
+  geom_sf(data = line.rw,
+            col = "orange",
+            size = 1.5) +
+  geom_sf(data = line.crw,
+             col = "black",
+             size = 0.6) +
+  labs(x = element_blank(), y = element_blank()) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 6))
+
+dist <- data.frame(dist = 
+                     sf::st_distance(loc.rw, loc.crw, by_element = TRUE)
+                   ) |>
+  mutate(dist = as.numeric(dist))
+
+pB <- ggplot(dist) +
+  geom_histogram(aes(dist),
+                 fill = grey(0.6),
+                 col = "white",
+                 bins = 20) +
+  labs(x = "Distance (km)") +
+  theme_minimal() +
+  theme(axis.title = element_text(size = 8),
+        axis.text = element_text(size = 6))
+
+
 p1 <- plot(res.rw, "ts") + 
   xlab(element_blank()) + 
-  theme(axis.text.x = element_text(size=7, angle=45), 
-        strip.text.y = element_blank())
-#p2 <- plot(res.rw, "qq")
-p3 <- plot(res.rw, "acf") + 
-  theme(strip.text.y = element_blank())
+  ylab("Residuals") +
+  theme(axis.text.x = element_text(size=6, angle=45), 
+        axis.title.y = element_text(size = 8),
+        strip.text.y = element_blank(),
+        axis.title.x = element_blank())
 
-p4 <- plot(res.crw, "ts") + 
+p2 <- plot(res.rw, "acf") + 
+  theme(strip.text.y = element_blank(),
+        axis.text = element_text(size = 6),
+        axis.title = element_text(size = 8))
+
+p3 <- plot(res.crw, "ts") + 
   ylab(element_blank()) + 
   xlab(element_blank()) + 
-  theme(axis.text.x = element_text(size=7, angle=45), 
-        strip.text.y = element_blank())
-#p5 <- plot(res.crw, "qq")
-p6 <- plot(res.crw, "acf") + 
+  theme(axis.text.x = element_text(size=6, angle=45), 
+        strip.text.y = element_blank(),
+        axis.title.x = element_blank())
+
+p4 <- plot(res.crw, "acf") + 
   ylab(element_blank()) + 
-  theme(strip.text.y = element_blank())
+  theme(strip.text.y = element_blank(),
+        axis.text = element_text(size = 6),
+        axis.title = element_text(size = 8))
 
 design <- "AABB
-           AABB
            CCDD
-           GGHH"
-wrap_plots(A=pA, B=pB, C=p1, D=p4, G=p3, H=p6, ncol = 2, design = design) + 
-  plot_annotation(tag_levels = "a")
+           EEFF"
+
+wrap_plots(A=pA, B=pB, C=p1, D=p3, E=p2, F=p4, ncol = 2, design = design) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 9))
 ```
 
-## 3.2 | Assessing SSM robustness with simulated data
-Using the `sim` function, we simulate animal movement tracks with a variety of plausible movement patterns. We use these simulated data to examine the accuracy of SSM fits to data generated by processes that differ from the `rw` and `crw` process models use in `fit_ssm`. While we regard this example as an atypical use of the track simulation function, it nonetheless illustrates one of the many possible uses of such a simulation tool. Another, more common application of track simulation as a preparatory step for a habitat usage analysis is highlighted in example 3.4. 
-
-We used `sim` to generate 50 animal tracks from each of the following 3 process models: 1) the same `crw` process used in `fit_ssm`; 2) a 2-state `crw` with stochastic switching between movement states; 3) the movement persistence model, where persistence in directionality and speed varies as a random walk. All tracks were simulated for 300 regular, 6-h time steps and a randomly selected Argos Kalman Filter error ellipse was assigned to each simulated location independent of the movement process. Further details on the track simulations are in Supplement xx. Representative simulated tracks for each movement process are shown in (Fig. \ref{fig:ex2}a-c). We then used `fit_ssm` to fit both the `rw` and `crw` SSM's to these simulation tracks and calculated the Root Mean Squared Error of the SSM fits using the Euclidean distance between each SSM-estimated location and the corresponding simulated location (without Argos error). As the spatial scale of the simulated tracks differed among the 3 movement processes, we normalized RMSE values by the mean step length calculated across all tracks within each movement process type.
-
-Regardless of the simulated movement process, the `crw` SSM consistently provided more accurate fits than the `rw` SSM (Fig. \ref{fig:ex2}d-f). Although fits to the simulated 2-state `crw` and `mpm` tracks were less accurate than to the `crw` tracks, the differences were not large and goodness-of-fit based on prediction residuals were reasonable (Supplement xx). We advocate that in most cases the `crw` SSM should be preferred for quality-control of Argos tracking data, however the `rw` SSM may converge more reliably when fitting to problematic data (e.g., tracks with frequent and relatively large temporal data gaps).
-
-```{r ex2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=10, cache=TRUE, fig.cap="\\label{fig:ex2} Four example tracks simulated from the correlated random walk process model (`crw`, a), a 2-state `crw` model (b), and the movement persistence model (`mpm`, c). Normalised Root Mean Squared Errors of state-space models fit with either the `crw` or random walk (`rw`) process model to 50 simulated `crw` tracks (d), 50 simulated `2-state crw` tracks (e), and 50 simulated `mpm` tracks (f). The SSM fits using the `crw` process model were consistently more accurate than those using the `rw` process model, regardless of the type of movements simulated."}
-
-load("../data/ex32_simdat.RData")
-
-m1 <- ggplot(scrw %>% 
-         filter(id %in% c(1,26,39,43))
-       ) + 
-  geom_point(aes(lon,lat, col = factor(id)), size = 0.2) + 
-  scale_colour_manual(values = wesanderson::wes_palette("Darjeeling2"),
-                      guide = "none") +
-  ylab("Latitude") +
-  xlab("") +
-  theme_minimal()
-
-m2 <- ggplot(s2crw %>% 
-               filter(id %in% c(2,28,32,49))
-             ) + 
-  geom_point(aes(lon,lat, col = factor(id)), size = 0.2) + 
-  scale_colour_manual(values = wesanderson::wes_palette("Darjeeling2"),
-                      guide = "none") +
-  ylab("") +
-  xlab("Longitude") +
-  theme_minimal()
-
-m3 <- ggplot(smpm %>% 
-               filter(id %in% c(3,18,26,49))
-             ) + 
-  geom_point(aes(lon,lat, col = factor(id)), size = 0.2) + 
-  scale_colour_manual(values = wesanderson::wes_palette("Darjeeling2"),
-                      guide = "none") +
-  ylab("") +
-  xlab("") +
-  theme_minimal()
-
-load("../data/ex32_rmse.RData")
-levels(rmse$SSM) <- c("CRW","RW")
-
-## plot overall normalised rmse's
-p1 <- ggplot(rmse %>% filter(sim == "CRW"), aes(SSM, nrmse, fill = SSM)) + 
-  scale_fill_manual(values = wesanderson::wes_palette("Darjeeling2")) + #from wesanderson Zissou1 palette 
-  geom_boxplot(colour = grey(0.6)) + 
-  ylim(0, 1.2) +
-  theme_minimal() + 
-  xlab(element_blank()) +
-  ylab("Normalised RMSE") +
-  theme(legend.position = "none")
-
-p2 <- ggplot(rmse %>% filter(sim == "2-CRW"), aes(SSM, nrmse, fill = SSM)) + 
-  scale_fill_manual(values = wesanderson::wes_palette("Darjeeling2")) + #from wesanderson Zissou1 palette 
-  geom_boxplot(colour = grey(0.6)) + 
-  ylim(0, 1.2) +
-  theme_minimal() + 
-  xlab("SSM process model") +
-  ylab(element_blank()) +
-  theme(legend.position = "none")
-
-p3 <- ggplot(rmse %>% filter(sim == "MPM"), aes(SSM, nrmse, fill = SSM)) + 
-  scale_fill_manual(values = wesanderson::wes_palette("Darjeeling2")) + #from wesanderson Zissou1 palette c("#3B9AB2", "#E1AF00")
-  geom_boxplot(colour = grey(0.6)) + 
-  ylim(0, 1.2) +
-  theme_minimal() + 
-  xlab(element_blank()) +
-  ylab(element_blank()) +
-  theme(legend.position = "none")
-
-(m1 + m2 + m3) /
-(p1 + p2 + p3) +
-  plot_layout(heights = c(2,4)) +
-  plot_annotation(tag_levels = "a")
-```
-
-
-## 3.3 | Inferring movement persistence as an index of behaviour from Argos and GPS data
+## 3.2 | Inferring movement persistence from Argos and GPS data
 Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along five southern elephant seal tracks. We fitted the `crw` SSM with a 24-h prediction interval using `fit_ssm` and assuming bivariate normal location measurement errors consistent with Argos Least-Squares-derived locations [@Jonsen:2020]. We used the SSM-predicted locations to estimate movement persistence jointly among the 5 seals using `fit_mpm` and visualise the behavioural index along the seals' tracks. The data can be accessed in `foieGras` via `data(sese, package = 'foieGras')`. As the estimation of $\gamma_t$ is sensitive to choice of time scale, we examined the influence of different prediction intervals (1 - 20 min) on the ability of the movement persistence model to resolve changes in movement pattern along the penguin tracks.
 
 To illustrate how the method can accommodate other types of animal tracking data, we also infer $\gamma_t$ along six little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The data are temporally irregular GPS locations that are assumed to have minimal measurement error. We fitted the `crw` SSM to predict temporally regular locations at 5-min intervals, assuming consistently small bivariate normal location measurement errors (ie. $\pm$ 10 m sd).
@@ -141,25 +112,23 @@ Movement persistence estimates along the quality-controlled southern elephant se
 Despite vastly different scales of movement, the time series of little penguin movement persistence estimates were broadly similar to those of the southern elephant seals (Fig. \ref{fig:ex33.2}a-e). The little penguin foraging trips likely reflect the underlying spatial distribution of their forage-fish prey, with spatially diffuse bouts of lower movement persistence potentially indicative of foraging both within and among neighbouring discrete prey patches [@Carroll:2017] (Fig. \ref{fig:ex33.2}f).
 
 ```{r ex33.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=7, cache=TRUE, fig.cap="\\label{fig:ex33.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips from the colony at Iles Kerguelen, suggesting these bouts of low movement persistence are associated with foraging activity. Due to the stereographic projection used and huge area covered in (f), the scale bar is not accurate in all regions and is indicative only."}
-load("../data/ex33_fmp.RData")
+load("../data/ex33.RData")
 
-p1 <- plot(fmp, pages = 1, ncol=3, ask=0) &
+p1 <- plot(fit, type = 3, pages = 1, ncol=3, ask=0) &
   theme(legend.position = "none")
 
-m1 <- fmap(fit, 
-           fmp, 
-           what = "p", 
-           crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs",
-           map_type = "cartolight",
-           zoom = 4,
-           alpha = 0.5) +
+m1 <- map(fit, 
+          what = "p", 
+          crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs",
+          map_type = "cartolight",
+          zoom = 4,
+          alpha = 0.5) +
   xlab(element_blank()) +
   ylab(element_blank()) +
   ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
   theme(legend.position = c(0.88,0.9), legend.direction = "horizontal")
 
 sf_locs <- grab(fit, what = "p", as_sf = TRUE) %>%
-  mutate(g = grab(fmp, what = "f")$g) %>%
   sf::st_transform(., crs = m1$coordinates$crs)
 bb <- sf::st_bbox(sf_locs)
 
@@ -180,6 +149,8 @@ p1 / m1 +
 
 ```{r ex33.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=9, cache=TRUE, fig.cap="\\label{fig:ex33.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-f; grey envelopes are 95 % CI's) and along little penguin GPS tracks (g). Colour palette as in \\ref{fig:ex33.1}. Movement persistence was  estimated from SSM-predicted locations with a regular 5-min interval."}
 load("../data/ex33_lipe.RData")
+class(fmp)[1] <- "mpm_df"
+class(fit)[1] <- "ssm_df"
 
 p <- plot(fmp, ncol = 1, pages = 1, ask = FALSE, pal = "Cividis") &
   theme(legend.position = "none",
@@ -189,14 +160,12 @@ peng.ssm_sf <- foieGras::grab(fit, "p", as_sf = TRUE) %>%
   mutate(g = foieGras::grab(fmp, "f")$g) 
 bb <- sf::st_bbox(peng.ssm_sf)
 
-m <- foieGras::fmap(fit, 
+m <- map(fit, 
                     fmp, 
                     what = "p", 
                     map_type = "cartolight", 
                     zoomin = 1, 
-                    size = 0.8, 
-                    ext.rng = c(0.4, 0.05),
-                    alpha = 0.5) +
+                    ext.rng = c(0.4, 0.05)) +
   ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
   xlab(element_blank()) +
   ylab(element_blank()) +
@@ -228,30 +197,46 @@ p + m +
 
 To illustrate how to simulate tracks from `foieGras` model fits we use a sample of four juvenile harp seals (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step.
 
-From this process model we simulate 50 animal movement paths using `simfit` and use the `grad` argument to constrain the simulated paths to water. These tracks are then filtered based on their similarity to the original path using the `sim_filter` and the top 10% retained (`keep = .1`)(Fig. \ref{fig:ex34}).
+From this process model we simulate 50 animal movement paths using `simfit` and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 10% retained (`keep = 0.1`)(Fig. \ref{fig:ex34}).
 
 In combination, these functions provide a user-friendly method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications.
 
 ```{r ex34, echo = FALSE, message = FALSE, results = 'markup', fig.width = 9, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex34} Simulating (a) 50 movement paths from a correlated random walk process model and then (b) filtering those tracks to select the top 10% based on their similarity to the original fitted track (shown in black). "}
-
+# load track data
 locs <- readRDS("../data/ex34.rds")
-fit <- foieGras::fit_ssm(locs, model = "crw", time.step = 12, vmax = 4, control = ssm_control(verbose = 0))
+# load gradient rasters for simfit
+load(system.file("extdata/grad.rda", package = "foieGras"))
+
+fit <- fit_ssm(locs, 
+               model = "crw", 
+               time.step = 12, 
+               vmax = 4, 
+               control = ssm_control(verbose = 0))
 
 trs <- foieGras::simfit(fit,
               what = "predicted",
               reps = 50,
-              grad = readRDS(system.file("extdata/grad.RDS", package = "foieGras")),
-              beta = c(-300, 300))
+              grad = grad,
+              beta = c(-350, -350))
 
 trs_flt <- foieGras::sim_filter(trs,
                       keep = .1,
                       flag = 2)
 
-trs <- trs %>% tidyr::unnest(cols = c(sims)) %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
-trs_flt <- trs_flt %>% tidyr::unnest(cols = c(sims)) %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
+trs <- trs %>% 
+  tidyr::unnest(cols = c(sims)) %>% 
+  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
+  sf::st_set_crs(4326)
+
+trs_flt <- trs_flt %>% 
+  tidyr::unnest(cols = c(sims)) %>% 
+  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
+  sf::st_set_crs(4326)
 
 plocs <- foieGras::grab(fit, "predicted", as_sf = F)
-plocs_sf <- plocs %>% sf::st_as_sf(coords = c('lon', 'lat')) %>% sf::st_set_crs(4326)
+plocs_sf <- plocs %>% 
+  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
+  sf::st_set_crs(4326)
 
 world_shp <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 
@@ -264,7 +249,10 @@ p1 <- ggplot() +
   geom_sf(aes(colour = factor(rep)), data = trs, size = 0.5) +
   scale_color_viridis_d(option = "cividis") +
   geom_sf(aes(), data = plocs_sf, size = 0.5) +
-  coord_sf(xlim = c(-3500000, 5000000), ylim = c(-4500000, 6000000), crs = prj, expand = T) +
+  coord_sf(xlim = c(-3500000, 5000000), 
+           ylim = c(-4500000, 6000000), 
+           crs = prj, 
+           expand = T) +
   scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
   scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
   ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
@@ -277,7 +265,10 @@ p2 <- ggplot() +
   geom_sf(aes(colour = factor(rep)), size = 0.5, data = trs_flt) +
   scale_color_viridis_d(option = "cividis") +
   geom_sf(aes(), data = plocs_sf, size = 0.5) +
-  coord_sf(xlim = c(-3500000, 5000000), ylim = c(-4500000, 6000000), crs = prj, expand = T) +
+  coord_sf(xlim = c(-3500000, 5000000), 
+           ylim = c(-4500000, 6000000), 
+           crs = prj, 
+           expand = T) +
   scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
   scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
   ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
@@ -286,8 +277,6 @@ p2 <- ggplot() +
 
 p1 + p2 + plot_annotation(tag_levels = "a") & 
   theme(plot.tag = element_text(size = 11))
-
-
 
 ```
 
