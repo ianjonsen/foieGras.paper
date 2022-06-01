@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  28 MAY 2022 14:01
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.16)  31 MAY 2022 17:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -980,7 +980,7 @@ LaTeX Font Warning: Font shape `TU/lmtt/bx/sc' undefined
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
 (Font)              Font shape `TU/lmtt/b/n' tried instead on input line 222.
 
-Underfull \hbox (badness 10000) in paragraph at lines 249--250
+Underfull \hbox (badness 10000) in paragraph at lines 248--249
 []|\TU/lmr/m/n/12 Extract fitted/predicted/observed locations from a
  []
 
@@ -990,25 +990,26 @@ LaTeX Font Info:    Font shape `TU/lmtt/bx/sc' in size <12> not available
 [4] [5] [6]
 File: ../figures/ex31-1.pdf Graphic file (type pdf)
 <use ../figures/ex31-1.pdf>
-[7] [8]
 File: ../figures/ex32.1-1.pdf Graphic file (type pdf)
 <use ../figures/ex32.1-1.pdf>
+[7] [8] [9]
 File: ../figures/ex32.2-1.pdf Graphic file (type pdf)
 <use ../figures/ex32.2-1.pdf>
+[10]
 File: ../figures/ex33-1.pdf Graphic file (type pdf)
 <use ../figures/ex33-1.pdf>
-[9] [10] [11] [12] [13] [14] [15] (./full_document.aux)
+[11] [12] [13] [14] (./full_document.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 19606 strings out of 476919
- 344130 string characters out of 5821839
- 852841 words of memory out of 5000000
- 39258 multiletter control sequences out of 15000+600000
+ 19608 strings out of 476919
+ 344165 string characters out of 5821839
+ 851209 words of memory out of 5000000
+ 39260 multiletter control sequences out of 15000+600000
  410037 words of font info for 88 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 98i,11n,122p,904b,401s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,11n,122p,561b,401s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on full_document.pdf (15 pages).
+Output written on full_document.pdf (14 pages).

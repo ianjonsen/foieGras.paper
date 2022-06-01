@@ -3,22 +3,12 @@
 ```{r part_3_premble, include=FALSE}
 #### Code for part 3: Examples ####
 ```
-We illustrate the main capabilities of `foieGras` through a series of examples using real and simulated tracking data. These examples are for demonstration purposes and not intended as a comprehensive guide for conducting analyses with `foieGras`. Complete code for reproducing the examples and for gaining a deeper understanding of `foieGras` functions are provided as supplements.
+We illustrate the main capabilities of `foieGras` through a series of examples that are for demonstration purposes and not intended as a comprehensive guide for conducting analyses with `foieGras`. Complete code and data for reproducing the examples and for gaining a deeper understanding of `foieGras` functions are provided as supplements.
 
 ## 3.1 | Southern Elephant seal - SSM validation with prediction residuals
-We use a subadult male southern elephant seal track included in `foieGras` (`sese2`), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. The data are temporally irregular Argos Least-Squares based locations, 73 \% of which are in the poorest location quality classes: A and B. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` method for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}).
+We use a sub-adult male southern elephant seal track included in `foieGras` (`sese2`, id: ct36-E-09), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. The data are temporally irregular Argos Least-Squares based locations, 74 \% of which are in the poorest location quality classes: A and B. We fit both the `rw` and `crw` models using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculate prediction residuals using `osar`, and then use the generic `plot` method for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}).
 
-The plots of predicted states on top of the observations suggest both models yield similar fits (Fig. \ref{fig:ex1}a). However, corresponding predicted locations from the two models differ by a median 6.62 km (range: 0.02, 53.02 km; Fig. \ref{fig:ex1}b), and there are marked trends in the time-series of residuals for the `rw` model fit (Fig. \ref{fig:ex1}c) and the `rw` ACF's reveal consistent positive autocorrelation in the prediction residuals (Fig. \ref{fig:ex1}e). The corresponding `crw` prediction residuals show little trend through time and have relatively little autocorrelation (Fig. \ref{fig:ex1}d,f), implying that the `crw` process model provides a better fit to the data.
-
-```{r sese1 SSM, eval=FALSE, echo=FALSE}
-fit.rw <- fit_ssm(sese2, vmax=4, model="rw", time.step=12, control=ssm_control(verbose=0))
-res.rw <- osar(fit.rw[1,])
-
-fit.crw <- fit_ssm(sese2, vmax=4, model="crw", time.step=12, control=ssm_control(verbose=0))
-res.crw <- osar(fit.crw[1,])
-```
-
-```{r ex31, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=6, cache=TRUE, fig.cap="\\label{fig:ex1} Selected diagnostic plots for assessing `rw` (a,c,e) and `crw` (b,d,f) state-space model fits to a southern elephant seal track. Top panels (a,b) are plots of predicted states (red; regular 12-h time intervals) and observations (blue) with pre-filtered observations (orange; ignored by the SSM), using the `plot.fG_ssm` function. Panels c,d are time-series plots of the prediction residuals for the x and y coordinates of each fitted state. Panels e,f are autocorrelation functions of the prediction residuals. All residual plots generated using the `plot.fG_osar` function."}
+```{r ex31, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=6.25, cache=TRUE, fig.cap="\\label{fig:ex1} State-space model fits to a southern elephant seal track (a), and diagnostic plots for assessing `rw` (c - time-series of prediction residuals; e - autocorrelation of prediction residuals) and `crw` (d,f) state-space model goodness-of-fit. All residual plots generated using the `plot.fG_osar` function."}
 
 load("../data/ex31.RData")
 
@@ -51,9 +41,9 @@ pA <- ggplot() +
   labs(x = element_blank(), y = element_blank()) +
   theme_minimal() +
   theme(axis.text = element_text(size = 6),
-        legend.key.size = unit(c(5, 5), "mm"),
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 8),
+        legend.key.size = unit(c(5, 4), "mm"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 6),
         legend.position = c(0.3,0.2))
 
 dist <- data.frame(dist = 
@@ -102,45 +92,41 @@ p4 <- plot(res.crw, "acf") +
         axis.text = element_text(size = 6),
         axis.title = element_text(size = 8))
 
-design <- "AA
-           AA
-           CD
-           EF"
-
-patchwork::wrap_plots(A=pA, C=p1, D=p3, E=p2, F=p4, 
-                      design = design) +
+pA / (p1 | p3) / (p2 | p4) +
+  plot_layout(widths = c(2,3,3),
+              heights = c(2,1,1)) +
   patchwork::plot_annotation(tag_levels = "a") &
   theme(plot.tag = element_text(size = 9))
 ```
 
+The plots of predicted states on top of the observations suggest both models yield similar fits (Fig. \ref{fig:ex1}a; orange vs red lines). However, corresponding predicted locations from the two models differ by a median 6.62 km (range: 0.02, 53.02 km), and there are marked trends in the time-series of residuals for the `rw` model fit (Fig. \ref{fig:ex1}b) with significantly positive autocorrelation in both the x and y directions (Fig. \ref{fig:ex1}d). The `crw` prediction residuals show little trend through time and have relatively little autocorrelation (Fig. \ref{fig:ex1}c,e), implying that the `crw` process model provides a better fit to the data.
+
+
+
 ## 3.2 | Inferring movement persistence from Argos and GPS data
-Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along five southern elephant seal tracks. We fitted the `mp` SSM with a 24-h prediction interval using `fit_ssm`, assuming bivariate normal location measurement errors consistent with Argos Least-Squares-derived locations [@Jonsen:2020]. The `mp` SSM simultaneously estimates locations and $\gamma_t$, and their uncertainties. We then assess how $\gamma_t$ changes along the seals' tracks.
+Drawing on an expanded version of the data used in 3.1, we quality control and infer movement persistence, $\gamma_t$, along four southern elephant seal tracks. We fitted the `mp` SSM with a 24-h prediction interval using `fit_ssm`, assuming bivariate normal measurement errors consistent with Argos Least-Squares-derived locations [@Jonsen:2020]. The `mp` SSM simultaneously estimates locations and $\gamma_t$, and their uncertainties. We then assess how $\gamma_t$ changes along the seals' tracks to infer regions where the seals spend disproportionately more or less time during their foraging trips.
 
-To illustrate how the method can accommodate other types of animal tracking data, we also infer $\gamma_t$ along six little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The data are temporally irregular GPS locations, with high frequency sampling (1 - 2s) periodically disrupted by the birds' diving behaviour, and are assumed to have minimal measurement error. We consequently chose to fit the `crw` SSM to the GPS data and predict temporally regular locations at 5-min intervals, assuming consistently small bivariate normal location measurement errors (ie. $\pm$ 10 m sd). We then used `fit_mpm` to estimate $\gamma_t$ from the SSM-predicted locations.
+To illustrate how the method can accommodate other types of animal tracking data, we also infer $\gamma_t$ along four little penguin (*Eudyptula minor*) GPS tracks from Montague Island, NSW Australia, described in @Phillips:2021. The data are temporally irregular GPS locations, with high frequency sampling (1 - 2s) periodically disrupted by the birds' diving behaviour, and are assumed to have minimal measurement error. We consequently chose to fit the `crw` SSM to the GPS data and predict temporally regular locations at 5-min intervals, assuming consistently small bivariate normal location measurement errors (ie. $\pm$ 10 m sd). We then used `fit_mpm` to estimate $\gamma_t$ from the SSM-predicted locations.
 
-Movement persistence estimates along the quality-controlled southern elephant seal tracks highlight some fundamental differences in movement pattern among the seals. The two seals engaging in pelagic foraging trips (Fig. \ref{fig:ex32.1}a,c and f) had less contrast in their movements with consistently higher $\gamma_t$ estimates compared to the three seals engaging in trips to the fast-ice on the Antarctic shelf (Fig. \ref{fig:ex32.1}b,d-e and f). Although $\gamma_t$'s were higher overall for the pelagically foraging seals, they both spent little time making fast, highly directed movements ($\gamma_t \to 1$) relative to the shelf-foraging seals (\ref{fig:ex32.1}a,c vs b,d-e). This suggests the pelagically-foraging seals may spend considerable time searching for suitable foraging habitat in the highly variable eddy fields between the Subantarctic and Polar Fronts [@Jonsen:2019], whereas foraging habitat may be more predictable for seals travelling rapidly and directly to the Antarctic shelf region. These seals may also haulout periodically on available fast-ice to rest. This behaviour could also contribute to the higher contrast in movement persistence, relative to pelagically-foraging seals who would not have access to fast-ice.
-
-Despite vastly different scales of movement, the time series of little penguin movement persistence estimates were broadly similar to those of the southern elephant seals (Fig. \ref{fig:ex32.2}a-e). The little penguin foraging trips likely reflect the underlying spatial distribution of their forage-fish prey, with spatially diffuse bouts of lower movement persistence potentially indicative of foraging both within and among neighbouring discrete prey patches [@Carroll:2017] (Fig. \ref{fig:ex32.2}f).
-
-```{r ex32.1, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=7, cache=TRUE, fig.cap="\\label{fig:ex32.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for five southern elephant seals (a-e; grey envelopes are 95 % CI's) and along their 2-D tracks (f; track labels, a-e, correspond to the 1-D time-series plots). Locations associated with low move persistence (blue) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements. The lowest move persistence tends to occur at the distal end of foraging trips from the colony at Iles Kerguelen, suggesting these bouts of low movement persistence are associated with foraging activity. Due to the stereographic projection used and huge area covered in (f), the scale bar is not accurate in all regions and is indicative only."}
+```{r ex32.1, echo=FALSE, message=FALSE, results='markup', fig.width=8, fig.height=6.5, cache=TRUE, fig.cap="\\label{fig:ex32.1} Inferred move persistence, $\\gamma_t$, 1-D time-series for four southern elephant seals (a-d; grey envelopes are 95 % CI's) and along their 2-D tracks (e; track labels, a-d, correspond to the 1-D time-series plots). Locations associated with low move persistence (purple) are indicative of slow, undirected movements, whereas high move persistence (yellow) is indicative of faster, directed movements."}
 load("../data/ex32.RData")
 
-p1 <- plot(fit, 
+p1 <- plot(fit[1:4,], 
            type = 3, 
            pages = 1, 
-           ncol=3, 
+           ncol=2, 
            ask=0,
-           pal = "Sunset") &
+           pal = "Plasma") &
   theme(legend.position = "none",
-        axis.text = element_text(size = 6))
+        axis.text = element_text(size = 7))
 
 my.aes <- aes_lst(conf = FALSE, 
                   line = TRUE,
-                  mp_pal = hcl.colors(n=100, "Sunset"))
+                  mp_pal = hcl.colors(n=100, "Plasma"))
 my.aes$df$fill[5] <- grey(0.8)
-my.aes$df$fill[6] <- grey(0.4)
+my.aes$df$fill[6] <- grey(0.6)
 
-m1 <- map(fit, 
+m1 <- map(fit[1:4,], 
           what = "p", 
           aes = my.aes,
           crs = "+proj=stere +lon_0=70 +units=km +datum=WGS84 +no_defs",
@@ -149,84 +135,103 @@ m1 <- map(fit,
   ylab(element_blank()) +
   ggspatial::annotation_scale(height = unit(1.25, "mm"), 
                               aes(width_hint = 0.1,
-                                  location = "br", 
-                                  line_col = "white",
-                                  text_col = "white")) +
-  theme(legend.position = c(0.88,0.9), 
+                                  location = "br")) + 
+  theme(legend.position = c(0.85,0.9), 
         legend.direction = "horizontal",
-        text = element_text(colour = "white"))
+        legend.key.width = unit(7, "mm"),
+        legend.key.height = unit(4, "mm"),
+        legend.title = element_text(size = 9),
+        legend.text = element_text(size = 7),
+        axis.text = element_text(size = 7),
+        panel.grid = element_line(colour = "white"))
 
 sf_locs <- grab(fit, what = "p", as_sf = TRUE) %>%
   sf::st_transform(., crs = m1$coordinates$crs)
 bb <- sf::st_bbox(sf_locs)
 
-label.df <- data.frame(tag = c("a","b","c","e","d"), 
-                        x = c(1.03, 0.03, -0.03, 0.77, 0.51) * 
+label.df <- data.frame(tag = c("a","b","c","d"), 
+                        x = c(1.03, 0.03, -0.03, 0.51) * 
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
-                        y = c(0.56, 0.08, 0.68, 0.17, 0.3) * 
+                        y = c(0.56, 0.08, 0.68, 0.3) * 
                          (bb["ymax"] - bb["ymin"]) + bb["ymin"])
 m1 <- m1 + 
   geom_text(data = label.df, 
             aes(x, y, label=tag),
-            colour = "white")
+            size = 4)
 
-p1 / m1 +
-  plot_annotation(tag_levels = "a") +
-  plot_layout(heights = c(1.5,3)) &
-  theme(plot.title = element_blank())
-
+(p1 / m1) +
+  plot_layout(nrow = 2, 
+              heights = c(2, 3), 
+              guides = "keep") +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.title = element_blank(),
+        plot.tag = element_text(size = 10, colour = "black"))
 ```
 
-```{r ex32.2, echo=FALSE, message=FALSE, results='markup', fig.width=9, fig.height=9, cache=TRUE, fig.cap="\\label{fig:ex32.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-f; grey envelopes are 95 % CI's) and along little penguin GPS tracks (g). Colour palette as in \\ref{fig:ex32.1}. Movement persistence was  estimated from SSM-predicted locations with a regular 5-min interval."}
+Movement persistence estimates along the quality-controlled southern elephant seal tracks highlight some fundamental differences in movement pattern among the seals. The two seals engaging in pelagic foraging trips (Fig. \ref{fig:ex32.1}a,c and e) had less contrast in their movements with consistently higher $\gamma_t$ estimates compared to the two seals engaging in trips to the fast-ice on the Antarctic shelf (Fig. \ref{fig:ex32.1}b,d and e). Although $\gamma_t$'s were higher overall for the pelagically foraging seals, they both spent little time making fast, highly directed movements ($\gamma_t \to 1$) relative to the shelf-foraging seals (\ref{fig:ex32.1}a,c vs b,d). This suggests the pelagically-foraging seals may spend considerable time searching for suitable foraging habitat in the highly variable eddy fields between the Subantarctic and Polar Fronts [@Jonsen:2019], whereas foraging habitat may be more predictable for seals travelling rapidly and directly to the Antarctic shelf region. These seals may also haulout periodically on available fast-ice to rest. This behaviour could also contribute to the higher contrast in movement persistence, relative to pelagically-foraging seals who would not have access to fast-ice.
+
+```{r ex32.2, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=4, cache=TRUE, fig.cap="\\label{fig:ex32.2} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-d; grey envelopes are 95 % CI's) and along little penguin GPS tracks (e)."}
 load("../data/ex32_lipe.RData")
-class(fmp)[1] <- "mpm_df"
-class(fit)[1] <- "ssm_df"
 
-p <- plot(fmp, ncol = 1, pages = 1, ask = FALSE, pal = "Cividis") &
+p <- plot(fmp, ncol = 2, pages = 1, ask = FALSE, pal = "Plasma") &
   theme(legend.position = "none",
-        plot.title = element_blank())
+        plot.title = element_blank(),
+        axis.text = element_text(size = 6),
+        panel.grid.minor = element_blank())
 
-peng.ssm_sf <- foieGras::grab(fit, "p", as_sf = TRUE) %>%
-  mutate(g = foieGras::grab(fmp, "f")$g) 
+peng.ssm_sf <- foieGras::grab(fit, "p", as_sf = TRUE)
 bb <- sf::st_bbox(peng.ssm_sf)
+my.aes <- aes_lst(conf = F, line = T, mp_pal = hcl.colors(n=100, "Plasma"))
+my.aes$df$size[1] <- 1
 
-m <- map(fit, 
-                    fmp, 
-                    what = "p", 
-                    map_type = "cartolight", 
-                    zoomin = 1, 
-                    ext.rng = c(0.4, 0.05),
-         silent = TRUE) +
-  ggspatial::annotation_scale(height = unit(0.15, "cm"), aes(location = "br")) +
+m <- map(
+  fit,
+  fmp,
+  what = "p",
+  aes = my.aes,
+  map_type = "cartolight",
+  zoomin = 1,
+  ext.rng = c(0.3, 0.1),
+  normalise = FALSE,
+  silent = TRUE,
+  alpha = 0.75
+) +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), 
+                              aes(location = "br")) +
   xlab(element_blank()) +
   ylab(element_blank()) +
-  theme(legend.position = c(0.92,0.88))
+  scale_x_continuous(breaks = pretty(seq(150.13, 150.26, l = 4), n = 3)) +
+  scale_y_continuous(breaks = pretty(seq(-36.5, -36.24, l = 5), n = 4)) +
+  theme(legend.position = c(0.88,0.84),
+        legend.key.width = unit(4, "mm"),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        panel.grid = element_line(colour = "black"))
 
-label.df <- data.frame(tag = c("a","b","c","d","e"), 
-                        x = c(0.1, 0.8, -0.05, 0.53, 0.9) * 
+label.df <- data.frame(tag = c("a","b","c","d"), 
+                        x = c(0.1, 0.84, 0, 0.86) * 
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
-                        y = c(0.9, 0.225, 0.5, 0.03, 0.6) * 
+                        y = c(0.9, 0.225, 0.45, 0.55) * 
                          (bb["ymax"] - bb["ymin"]) + bb["ymin"])
 m <- m + 
-  geom_text(data = label.df, aes(x,y,label=tag))
+  geom_text(data = label.df, aes(x,y,label=tag), size = 3)
 
 ## plot movement persistence 1-D time-series and map along 2-D tracks
-design <- "
-166
-266
-366
-466
-566"
-
-p + m +
-  plot_layout(design = design, guides = "keep") +
+(p | m) +
+  plot_layout(widths = c(3, 2), guides = "keep") +
   plot_annotation(tag_levels = "a") &
-  theme(plot.tag = element_text(size = 11))
+  theme(plot.tag = element_text(size = 9))
 ```
+
+Despite vastly different scales of movement, the time series of little penguin movement persistence estimates were broadly similar to those of the southern elephant seals (Fig. \ref{fig:ex32.2}a-d). The little penguin foraging trips likely reflect the underlying spatial distribution of their forage-fish prey, with spatially diffuse bouts of lower movement persistence potentially indicative of foraging both within and among neighbouring discrete prey patches [@Carroll:2017] (Fig. \ref{fig:ex32.2}e).
+
+
+
 
 ## 3.3 | Simulating tracks from `foieGras` model fits
 
-To illustrate how to simulate tracks from `foieGras` model fits we use a sample of four juvenile harp seals (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step.
+To illustrate how to simulate tracks from `foieGras` model fits we use a sample of four juvenile harp seals (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a prediction interval (`time.step`) of 12 h.
 
 From this process model we simulate 50 animal movement paths using `simfit` and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 10% retained (`keep = 0.1`)(Fig. \ref{fig:ex33}).
 
@@ -258,6 +263,7 @@ trs <- trs %>%
   tidyr::unnest(cols = c(sims)) %>% 
   sf::st_as_sf(coords = c('lon', 'lat')) %>% 
   sf::st_set_crs(4326)
+  
 
 trs_flt <- trs_flt %>% 
   tidyr::unnest(cols = c(sims)) %>% 
