@@ -227,94 +227,148 @@ m <- m +
 Despite vastly different scales of movement, the time series of little penguin movement persistence estimates were broadly similar to those of the southern elephant seals (Fig. \ref{fig:ex32.2}a-d). The little penguin foraging trips likely reflect the underlying spatial distribution of their forage-fish prey, with spatially diffuse bouts of lower movement persistence potentially indicative of foraging both within and among neighbouring discrete prey patches [@Carroll:2017] (Fig. \ref{fig:ex32.2}e).
 
 
-
-
 ## 3.3 | Simulating tracks from `foieGras` model fits
 
-To illustrate how to simulate tracks from `foieGras` model fits we use a sample of four juvenile harp seals (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a prediction interval (`time.step`) of 12 h.
+To illustrate how to simulate tracks from `foieGras` model fits we use a juvenile harp seal (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, and described in @Grecian:2022. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a 4 ms^-1^ speed filter threshold (`vmax`) and a 12-h prediction interval (`time.step`).
 
-From this process model we simulate 50 animal movement paths using `simfit` and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 10% retained (`keep = 0.1`)(Fig. \ref{fig:ex33}).
+We simulate 50 animal movement paths from the `crw` process model using `simfit`, and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to largely remain in water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 10% retained (`keep = 0.1`)(Fig. \ref{fig:ex33}a,b).
 
-In combination, these functions provide a user-friendly method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications.
+As the potential function does not guarantee all locations remain off land, we re-route any remaining simulated locations from land back to water using `route_path` (Fig. \ref{fig:ex33}c).
 
-```{r ex33, echo = FALSE, message = FALSE, results = 'markup', fig.width = 9, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex33} Simulating (a) 50 movement paths from a correlated random walk process model and then (b) filtering those tracks to select the top 10% based on their similarity to the original fitted track (shown in black). "}
+In combination, these functions provide a simple, pragmatic method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications.
+
+```{r ex33, echo = FALSE, message = FALSE, results = 'markup', fig.width = 9, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex33} Simulating (a) 100 movement paths from a correlated random walk process model; (b) filtering those tracks to select the top 10% based on their similarity to the original SSM-predicted track (red); and (c) re-routing simulated locations on land (orange) back to ocean (blue). The orange box in (b) indicates region magnified in (c). SSM-predicted track (red) overlaid in all panels for context."}
 # load track data
 locs <- readRDS("../data/ex33.rds")
 # load gradient rasters for simfit
 load(system.file("extdata/grad.rda", package = "foieGras"))
 
-fit <- fit_ssm(locs, 
+fit <- fit_ssm(locs %>% filter(id == "hp6-749-19"), 
                model = "crw", 
                time.step = 12, 
                vmax = 4, 
                control = ssm_control(verbose = 0))
 
+set.seed(10000)
 trs <- foieGras::simfit(fit,
               what = "predicted",
-              reps = 50,
+              reps = 100,
               grad = grad,
               beta = c(-350, -350))
 
 trs_flt <- foieGras::sim_filter(trs,
-                      keep = .1,
+                      keep = 0.1,
                       flag = 2)
 
-trs <- trs %>% 
-  tidyr::unnest(cols = c(sims)) %>% 
-  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
-  sf::st_set_crs(4326)
-  
+trs_flt_rr <- foieGras::route_path(trs_flt,
+                                map_scale = 50,
+                                buffer = 20000)
 
-trs_flt <- trs_flt %>% 
-  tidyr::unnest(cols = c(sims)) %>% 
-  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
-  sf::st_set_crs(4326)
-
-plocs <- foieGras::grab(fit, "predicted", as_sf = F)
-plocs_sf <- plocs %>% 
-  sf::st_as_sf(coords = c('lon', 'lat')) %>% 
-  sf::st_set_crs(4326)
-
-world_shp <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+world_shp <- rnaturalearth::ne_countries(scale = 50, returnclass = "sf")
 
 # To generate a plot with less distortion first define a projection i.e. Lambert Azimuthal Equal Area
-prj = "+proj=laea +lat_0=60 +lon_0=-50 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+prj <- "+proj=laea +lat_0=60 +lon_0=-50 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+trs_sf <- trs %>% 
+  tidyr::unnest(cols = c(sims)) %>% 
+  sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
+  sf::st_transform(crs = prj) %>%
+  group_by(id, rep) %>%
+  summarise(do_union = FALSE) %>%
+  sf::st_cast("MULTIPOINT")
+
+trs_flt_sf <- trs_flt %>% 
+  tidyr::unnest(cols = c(sims)) %>% 
+  sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
+  sf::st_transform(crs = prj) %>%
+  group_by(id, rep) %>%
+  summarise(do_union = FALSE) %>%
+  sf::st_cast("MULTIPOINT")
+
+trs_flt_rr_sf <- trs_flt_rr %>% 
+  tidyr::unnest(cols = c(sims)) %>% 
+  sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
+  sf::st_transform(crs = prj) %>%
+  group_by(id, rep) %>%
+  summarise(do_union = FALSE) %>%
+  sf::st_cast("MULTIPOINT")
+
+plocs_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
+  sf::st_transform(crs = prj) %>%
+  group_by(id) %>%
+  summarise(do_union = FALSE) %>%
+  sf::st_cast("MULTIPOINT")
+
+pline_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
+  sf::st_transform(crs = prj) %>%
+  group_by(id) %>%
+  summarise(do_union = FALSE) %>%
+  sf::st_cast("MULTILINESTRING")
+
+bb_trs <- sf::st_bbox(trs_sf)  
 
 p1 <- ggplot() +
-  theme_bw() +
-  geom_sf(aes(), data = world_shp, colour = grey(0.6), fill = grey(0.6)) +
-  geom_sf(aes(colour = factor(rep)), data = trs, size = 0.5) +
-  scale_color_viridis_d(option = "cividis") +
-  geom_sf(aes(), data = plocs_sf, size = 0.5) +
-  coord_sf(xlim = c(-3500000, 5000000), 
-           ylim = c(-4500000, 6000000), 
+  theme_minimal() +
+  geom_sf(data = world_shp, colour = NA, fill = grey(0.6)) +
+  geom_sf(data = trs_sf, size = 0.2, colour = "dodgerblue") +
+  geom_sf(data = plocs_sf, size = 0.5, colour = "firebrick") +
+  coord_sf(xlim = c(bb_trs[1], bb_trs[3]), 
+           ylim = c(bb_trs[2], bb_trs[4]), 
            crs = prj, 
-           expand = T) +
+           expand = TRUE) +
   scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
   scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
-  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
-  facet_wrap(~id, ncol = 2) +
-  theme(legend.position="none")
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br"))
+
+## create box to magnify in subsequent maps
+zbox <- structure(list(id = c(1,1,1,1,1), 
+                          lon = c(-53, -68, -68, -53, -53), 
+                          lat = c(45, 45, 51.25, 51.25, 45)), 
+                  class = "data.frame", row.names = c(NA, -5L))
+zbox_sf <- zbox %>%
+  sf::st_as_sf(coords = c("lon","lat"), crs = 4326) %>%
+  sf::st_transform(crs = prj) %>%
+  group_by(id) %>%
+  summarise(geometry = sf::st_combine(geometry)) %>%
+  sf::st_cast("POLYGON")
+
+bb_zbox <- sf::st_bbox(zbox_sf)  
 
 p2 <- ggplot() +
-  theme_bw() +
-  geom_sf(aes(), data = world_shp, colour = grey(0.6), fill = grey(0.6)) +
-  geom_sf(aes(colour = factor(rep)), size = 0.5, data = trs_flt) +
-  scale_color_viridis_d(option = "cividis") +
-  geom_sf(aes(), data = plocs_sf, size = 0.5) +
-  coord_sf(xlim = c(-3500000, 5000000), 
-           ylim = c(-4500000, 6000000), 
+  theme_minimal() +
+  geom_sf(data = world_shp, colour = NA, fill = grey(0.6)) +
+  geom_sf(size = 0.2, data = trs_flt_sf, colour = "dodgerblue") +
+  geom_sf(data = plocs_sf, size = 0.4, colour = "firebrick") +
+  geom_sf(data = zbox_sf, size = 0.75, colour = "orange", fill = NA) +
+  coord_sf(xlim = c(bb_trs[1], bb_trs[3]), 
+           ylim = c(bb_trs[2], bb_trs[4]), 
            crs = prj, 
-           expand = T) +
+           expand = TRUE) +
   scale_x_continuous(breaks = seq(from = -180, to = 180, by = 20)) +
   scale_y_continuous(breaks = seq(from = 0, to = 90, by = 15)) +
-  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br")) +
-  facet_wrap(~id, ncol = 2) +
-  theme(legend.position="none")
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br"))
 
-p1 + p2 + plot_annotation(tag_levels = "a") & 
-  theme(plot.tag = element_text(size = 11))
+world_shp <- rnaturalearth::ne_countries(scale = 10, returnclass = "sf")
 
+p3 <- ggplot() +
+  theme_minimal() +
+  geom_sf(data = world_shp, colour = NA, fill = grey(0.6)) +
+  geom_sf(data = trs_flt_sf, colour = "orange", size = 0.8) +
+  geom_sf(data = trs_flt_rr_sf, colour = "dodgerblue", size = 0.8) +
+  geom_sf(data = pline_sf, size = 0.2, colour = "firebrick") +
+  geom_sf(data = plocs_sf, size = 0.4, colour = "firebrick") +
+  coord_sf(xlim = c(bb_zbox[1], bb_zbox[3]), 
+           ylim = c(bb_zbox[2], bb_zbox[4]), 
+           crs = prj, 
+           expand = FALSE) +
+  scale_x_continuous(breaks = seq(from = -180, to = 180, by = 5)) +
+  scale_y_continuous(breaks = seq(from = 0, to = 90, by = 5)) +
+  ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "tl"))
+
+p1 + p2 + p3 + 
+  patchwork::plot_layout(ncol = 2) +
+  patchwork::plot_annotation(tag_levels = "a") & 
+  theme(plot.tag = element_text(size = 10))
 ```
 
 
