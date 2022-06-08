@@ -4,5 +4,7 @@
 #### Code for part 4: Discussion ####
 ```
 
+The estimation speed and simplicity of the SSMs allows them to be fit as part of a fully automated, real-time quality control/quality assurances process [@Jonsen:2020].
+
 Ex 3.2
 In a limited way, this provides information on the robustness of the `foieGras` SSM's to different kinds plausible animal movements
