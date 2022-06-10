@@ -18,13 +18,13 @@ loc.rw <- grab(fit.rw[1,], "f", as_sf = TRUE) |>
   sf::st_transform("+proj=stere +lon_0=90 +units=km") 
 line.rw <- loc.rw |>
   dplyr::group_by(id) |>
-  dplyr::summarise(do_union = FALSE) |>
+  dplyr::summarise(do_union = FALSE, .groups = "drop") |>
   sf::st_cast("MULTILINESTRING")
 loc.crw <- grab(fit.crw[1,], "f", as_sf = TRUE) |>
   sf::st_transform("+proj=stere +lon_0=90 +units=km") 
 line.crw <- loc.crw |>
   dplyr::group_by(id) |>
-  dplyr::summarise(do_union = FALSE) |>
+  dplyr::summarise(do_union = FALSE, .groups = "drop") |>
   sf::st_cast("MULTILINESTRING")
 
 line.ssm <- bind_rows(line.rw, line.crw) |>
@@ -274,7 +274,7 @@ trs_sf <- trs %>%
   sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
   sf::st_transform(crs = prj) %>%
   group_by(id, rep) %>%
-  summarise(do_union = FALSE) %>%
+  summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTIPOINT")
 
 trs_flt_sf <- trs_flt %>% 
@@ -282,7 +282,7 @@ trs_flt_sf <- trs_flt %>%
   sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
   sf::st_transform(crs = prj) %>%
   group_by(id, rep) %>%
-  summarise(do_union = FALSE) %>%
+  summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTIPOINT")
 
 trs_flt_rr_sf <- trs_flt_rr %>% 
@@ -290,19 +290,19 @@ trs_flt_rr_sf <- trs_flt_rr %>%
   sf::st_as_sf(coords = c('lon', 'lat'), crs = 4326) %>% 
   sf::st_transform(crs = prj) %>%
   group_by(id, rep) %>%
-  summarise(do_union = FALSE) %>%
+  summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTIPOINT")
 
 plocs_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
   sf::st_transform(crs = prj) %>%
   group_by(id) %>%
-  summarise(do_union = FALSE) %>%
+  summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTIPOINT")
 
 pline_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
   sf::st_transform(crs = prj) %>%
   group_by(id) %>%
-  summarise(do_union = FALSE) %>%
+  summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTILINESTRING")
 
 bb_trs <- sf::st_bbox(trs_sf)  

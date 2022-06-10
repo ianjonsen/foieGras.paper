@@ -12,7 +12,7 @@ output:
   pdf_document:
     fig_caption: yes
     keep_tex: yes
-    latex_engine: xelatex
+    latex_engine: pdflatex
     includes:
         in_header:
           - preamble.sty
