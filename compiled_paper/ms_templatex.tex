@@ -3,8 +3,8 @@
 %\newcommand*{\authorfont}{\fontfamily{phv}\selectfont}
 %$if(fontfamily)$
 %\usepackage[$fontfamilyoptions$]{$fontfamily$}
-\usepackage{fontspec}
-\setmainfont[Ligatures=TeX, BoldFont={Helvetica Neue-Bold}, ItalicFont={Helvetica Neue-LightItalic}]{helvetica neue light}
+%\usepackage{fontspec}
+%\setmainfont[Ligatures=TeX, BoldFont={Helvetica Neue-Bold}, ItalicFont={Helvetica Neue-LightItalic}]{helvetica neue light}
 %$else$
 %\usepackage{lmodern}
 %$endif$
@@ -78,7 +78,7 @@ $endif$
 
 $if(title)$
 \title{$title$$if(subtitle)$: $subtitle$$endif$ $if(anonymous)$$else$$if(thanks)$\thanks{$thanks$} $endif$$endif$ }
-$endif$ 
+$endif$
 
 
 
@@ -129,7 +129,7 @@ $endif$
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={$if(anonymous)$$else$$for(author)$$author.name$ ($author.affiliation$)$sep$ and $endfor$$endif$},
-             pdfkeywords = {$if(keywords)$$keywords$$endif$},  
+             pdfkeywords = {$if(keywords)$$keywords$$endif$},
             pdftitle={$title$$if(subtitle)$: $subtitle$$endif$},
             colorlinks=true,
             citecolor=$if(citecolor)$$citecolor$$else$blue$endif$,
@@ -152,11 +152,11 @@ $endfor$
 \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \begin{document}
-	
-% \pagenumbering{arabic}% resets `page` counter to 1 
+
+% \pagenumbering{arabic}% resets `page` counter to 1
 %$if(appendix)$
 %\renewcommand*{\thepage}{$appendixletter$--\arabic{page}}
-%$endif$    
+%$endif$
 
 $if(title)$
 % \maketitle
@@ -164,13 +164,13 @@ $if(title)$
 {% \usefont{T1}{pnc}{m}{n}
 \setlength{\parindent}{0pt}
 \thispagestyle{plain}
-{\fontsize{12}{14}\selectfont\raggedright 
-\maketitle  % title \par  
+{\fontsize{12}{14}\selectfont\raggedright
+\maketitle  % title \par
 
 }
 
 {
-   \vskip 13.5pt\relax \normalsize\fontsize{11}{12} 
+   \vskip 13.5pt\relax \normalsize\fontsize{11}{12}
 $if(anonymous)$\hfill $else$$for(author)${\bf $author.name$} \hskip 20pt \emph{\small $author.affiliation$}  $sep$ \par $endfor$ $endif$
 
 }
@@ -190,7 +190,7 @@ $if(abstract)$
 
     \hbox{\vrule height .2pt width 39.14pc}
 
-    \vskip 8.5pt % \small 
+    \vskip 8.5pt % \small
 
 \noindent \emph{Abstract}:  $abstract$
 
@@ -220,7 +220,7 @@ $if(endnotes)$
 \theendnotes
 $endif$
 \newpage
-\singlespacing 
+\singlespacing
 $if(natbib)$
 $if(bibliography)$
 $if(biblio-title)$
