@@ -14,8 +14,8 @@ require(tidyverse, quietly = TRUE)
 require(foieGras, quietly = TRUE)
 ```
 
-### Infer movement persistence along SSM-filtered southern elephant seal tracks
-```{r fit SSM and MPM, eval=FALSE, message=FALSE, warning=FALSE}
+### Infer movement persistence along southern elephant seal tracks
+```{r fit SSM, eval=FALSE, message=FALSE, warning=FALSE}
 load("../data/ex32_sese.RData")
 
 fit <- fit_ssm(sese, vmax=3, model="mp", time.step=12, control=ssm_control(verbose=0))

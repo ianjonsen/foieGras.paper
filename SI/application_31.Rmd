@@ -1,0 +1,145 @@
+---
+title: "Appendix S1: R code for Application 3.1"
+author: "Jonsen et al"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load required R packages
+```{r load pkgs, eval=FALSE, message=FALSE}
+require(tidyverse)
+require(patchwork)
+require(sf)
+require(foieGras)
+```
+
+### Fit `rw` and `crw` SSM's with 12-h `time.step` to southern elephant seal example data
+```{r fit SSMs, eval=FALSE, message=FALSE}
+## access data from foieGras
+data(sese2, package = "foieGras")
+
+## use only 1 seal track
+sese2 <- subset(sese2, id == "ct36-E-09")
+
+fit.rw <- fit_ssm(sese2, model = "rw", time.step = 12)
+fit.crw <- fit_ssm(sese2, model = "crw", time.step = 12)
+```
+
+### Calculate One-Step-Ahead (Prediction) residuals for both model fits
+```{r calc osars, eval=FALSE, message=FALSE}
+
+res.rw <- osar(fit.rw)
+res.crw <- osar(fit.crw)
+```
+
+## Create Figure 1
+### Panel A - model fits to observed locations
+```{r panel a, eval=FALSE, message=FALSE}
+
+## Use sf package to project locations & convert SSM-estimated locations to lines
+dat <- grab(fit.rw[1,], "d", as_sf = TRUE) %>% 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+
+loc.rw <- grab(fit.rw[1,], "f", as_sf = TRUE) %>%
+  sf::st_transform("+proj=stere +lon_0=90 +units=km") 
+
+line.rw <- loc.rw %>%
+  dplyr::group_by(id) %>%
+  dplyr::summarise(do_union = FALSE, .groups = "drop") %>%
+  sf::st_cast("MULTILINESTRING")
+
+loc.crw <- grab(fit.crw[1,], "f", as_sf = TRUE) %>%
+  sf::st_transform("+proj=stere +lon_0=90 +units=km") 
+
+line.crw <- loc.crw %>%
+  dplyr::group_by(id) %>%
+  dplyr::summarise(do_union = FALSE, .groups = "drop") %>%
+  sf::st_cast("MULTILINESTRING")
+
+line.ssm <- dplyr::bind_rows(line.rw, line.crw) %>%
+  dplyr::mutate(SSM = c("rw","crw")) %>%
+  dplyr::select(id, SSM, geometry)
+
+## Plot SSM fits to observed locations
+pA <- ggplot() +
+  geom_sf(data = dat, 
+             col = "dodgerblue", 
+             size = 1.5) +
+  geom_sf(data = line.ssm,
+            aes(colour = SSM)) +
+  scale_colour_manual(values = c("orange", "firebrick")) +
+  labs(x = element_blank(), y = element_blank()) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 6),
+        legend.key.size = unit(c(5, 4), "mm"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 6),
+        legend.position = c(0.25,0.2))
+```
+
+
+### Panel B - plot time-series of prediction residuals for `rw` model
+```{r panel b, eval=FALSE, message=FALSE}
+
+## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+pB <- plot(res.rw, "ts") + 
+  xlab(element_blank()) + 
+  ylab("Residuals") +
+  theme(axis.text.x = element_text(size=6, angle=45), 
+        axis.title.y = element_text(size = 8),
+        strip.text.y = element_blank(),
+        axis.title.x = element_blank())
+```
+
+
+### Panel C - plot autocorrelation functions of prediction residuals for `rw` model
+```{r panel c, eval=FALSE, message=FALSE}
+
+## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+pC <- plot(res.rw, "acf") + 
+  theme(strip.text.y = element_blank(),
+        axis.text = element_text(size = 6),
+        axis.title = element_text(size = 8))
+```
+
+
+### Panel D - plot time-series of prediction residuals for `crw` model
+```{r panel d, eval=FALSE, message=FALSE}
+
+## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+pD <- plot(res.crw, "ts") + 
+  xlab(element_blank()) + 
+  ylab("Residuals") +
+  theme(axis.text.x = element_text(size=6, angle=45), 
+        axis.title.y = element_text(size = 8),
+        strip.text.y = element_blank(),
+        axis.title.x = element_blank())
+```
+
+
+### Panel E - plot autocorrelation functions of prediction residuals for `crw` model
+```{r panel e, eval=FALSE, message=FALSE}
+
+## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+pE <- plot(res.crw, "acf") + 
+  theme(strip.text.y = element_blank(),
+        axis.text = element_text(size = 6),
+        axis.title = element_text(size = 8))
+```
+
+
+### Arrange panels & render figure 1 using the `patchwork` package
+```{r figure 1, eval=FALSE, fig.width=7, fig.height=6.25}
+
+pA / (pB | pD) / (pC | pE) +
+  patchwork::plot_layout(widths = c(2,3,3),
+              heights = c(2,1,1)) +
+  patchwork::plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 9))
+```
+
+

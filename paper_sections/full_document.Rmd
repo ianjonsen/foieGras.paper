@@ -10,15 +10,15 @@ header-includes:
 - \subsectionfont{\sffamily\normalsize\scshape}
 compact-title: no
 output:
-  word_document: default
-  html_document:
-    df_print: paged
   pdf_document:
     fig_caption: yes
     keep_tex: yes
     latex_engine: pdflatex
     includes:
       in_header: preamble.sty
+  html_document:
+    df_print: paged
+  word_document: default
 documentclass: article
 classoption: 12pt
 geometry: left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=12pt,letterpaper

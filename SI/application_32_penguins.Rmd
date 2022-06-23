@@ -1,0 +1,104 @@
+---
+title: "Appendix S3: Code for Application 3.2 penguins"
+author: "Jonsen et al"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load required R packages
+```{r load pkgs, eval=FALSE, message=FALSE}
+require(tidyverse)
+require(ggspatial)
+require(patchwork)
+require(sf)
+require(foieGras)
+```
+
+### Fit `crw` SSM with 5-min `time.step` to time-regularise little penguin tracks
+```{r fit SSM, eval=FALSE, message=FALSE}
+
+## Load data from .csv file
+lipe <- read.csv("../data/lipe_ex32.csv")
+
+## fit `crw` SSM, using: 1) speed filter (vmax) of 5 m/s to exclude any extreme 
+##   observations; 2) excluding any locations occurring < 5 s apart in time (min.dt); 
+##   3) a 5-min time.step
+fit <- fit_ssm(lipe, vmax=5, min.dt=5, model="crw", time.step=5/60)
+```
+
+### Fit move persistence model with `fit_mpm` to SSM-predicted locations
+```{r fit mpm, eval=FALSE, message=FALSE}
+
+## use `jmpm` model to fit jointly across the 4 penguin tracks
+fmp <- fit_mpm(fit, what = "predicted", model = "jmpm")
+```
+
+### Plot move persistence time-series for 5-min prediction interval & map along SSM-predicted tracks
+```{r plot-map, eval=FALSE, message=FALSE}
+
+## plot move persistence time-series for all 4 penguins, drop legend
+p1 <- plot(fmp, ncol = 2, pages = 1, pal = "Plasma") &
+  theme(legend.position = "none",
+        plot.title = element_blank(),
+        axis.text = element_text(size = 6),
+        panel.grid.minor = element_blank())
+
+## customise mapping aesthetics
+my.aes <- aes_lst(conf = F, line = T, mp_pal = hcl.colors(n=100, "Plasma"))
+my.aes$df$size[1] <- 1
+```
+\pagebreak
+```{r plot-map2, eval=FALSE, message=FALSE, fig.width=7, fig.height=4}
+## use foieGras::map to merge SSM & MPM model fits (SSM = fit, MPM = fmp);
+##  use map tiles for better coastline resolution (Montague Is not in 
+##  `rnaturalearthhires` polygon data)
+m1 <- map(
+  fit,
+  fmp,
+  what = "p",
+  aes = my.aes,
+  map_type = "cartolight",
+  zoomin = 1,
+  ext.rng = c(0.3, 0.1),
+  normalise = FALSE,
+  silent = TRUE,
+  alpha = 0.75
+) +
+  ggspatial::annotation_scale(height = unit(0.15, "cm"), 
+                              aes(location = "br")) +
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  scale_x_continuous(breaks = pretty(seq(150.13, 150.26, l = 4), n = 3)) +
+  scale_y_continuous(breaks = pretty(seq(-36.5, -36.24, l = 5), n = 4)) +
+  theme(legend.position = c(0.88,0.84),
+        legend.key.width = unit(4, "mm"),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        panel.grid = element_line(colour = "black"))
+
+## define bounding box for map annotations
+bb <- grab(fit, "p", as_sf = TRUE) %>% 
+  sf::st_bbox()
+
+## define track labels for map annotations
+label.df <- data.frame(tag = c("a","b","c","d"), 
+                        x = c(0.1, 0.84, 0, 0.86) * 
+                         (bb["xmax"] - bb["xmin"]) + bb["xmin"],
+                        y = c(0.9, 0.225, 0.45, 0.55) * 
+                         (bb["ymax"] - bb["ymin"]) + bb["ymin"])
+
+m1 <- m1 + 
+  geom_text(data = label.df, aes(x,y,label=tag), size = 3)
+
+## arrange panels & render Figure 3 with `patchwork` package
+(p1 | m1) +
+  patchwork::plot_layout(widths = c(3, 2), guides = "keep") +
+  patchwork::plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 9))
+```
+
