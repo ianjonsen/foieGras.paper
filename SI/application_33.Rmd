@@ -21,9 +21,9 @@ require(foieGras)
 ### Fit `crw` SSM to harp seal track
 ```{r fit ssm, eval=FALSE}
 ## load track data
-locs <- read.csv("data/hase_ex33.csv")
+locs <- read.csv("../data/hase_ex33.csv")
 
-fit <- fit_ssm(locs %>% filter(id == "hp6-749-19"), 
+fit <- fit_ssm(locs, 
                model = "crw", 
                time.step = 12, 
                vmax = 4, 
