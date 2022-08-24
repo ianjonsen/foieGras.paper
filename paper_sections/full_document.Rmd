@@ -13,6 +13,7 @@ output:
     fig_caption: yes
     keep_tex: yes
     latex_engine: pdflatex
+    citation_package: natbib
     includes:
       in_header: preamble.sty
   html_document:
@@ -22,7 +23,7 @@ documentclass: article
 classoption: 12pt
 geometry: left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=12pt,letterpaper
 bibliography: references.bib
-csl: methods-in-ecology-and-evolution.csl
+biblio-style: mee
 spacing: double
 ---
 
@@ -93,11 +94,11 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \end{center}
 
 # Abstract
-1.  
+1.  Animal-borne sensor and tracking data are essential for understanding the ecology, behaviour and physiology of mobile or cryptic species. Biologically meaningful signals in these data can be obscured by noise due to imperfect measurement technology, and rigorous quality control is required before before comprehensive analysis can proceed.
 
-2.  
+2.  State-space models are powerful tools that can separate artificial noise from biologically meaningful signals. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit sensor information. However, these are statistically complex models that can be challenging to fit to diverse animal tracking data sets.
 
-3.  
+3.  We introduce the R package `foieGras` that aims to 
 
 4.  
 

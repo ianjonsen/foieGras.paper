@@ -1,5 +1,5 @@
 ---
-title: 'Appendix S4: Code for Application 3.3'
+title: 'Appendix S3: Code for Application 3.3'
 author: "Jonsen et al"
 date: "`r Sys.Date()`"
 output: pdf_document
@@ -26,21 +26,22 @@ locs <- read.csv("../data/hase_ex33.csv")
 fit <- fit_ssm(locs, 
                model = "crw", 
                time.step = 12, 
-               vmax = 4, 
-               control = ssm_control(verbose = 0))
+               vmax = 4)
 ```
 
 ### Simulate tracks from SSM fit object
 ```{r simulate tracks, eval=FALSE, message=FALSE}
 ## load gradient rasters so we can use the potential function in simfit to keep
-##  locations off land as much as possible
+##  locations off land as much as possible. The rasters provide the x & y 
+##  gradients of distance from coast for all global land polygons.
 load(system.file("extdata/grad.rda", package = "foieGras"))
 
 ## ensure simulated tracks are same as in main text figure
 set.seed(10000)
 
 ## simulate 100 tracks from SSM model fit object & apply potential function to
-##  keep most locations off land (`grad` is the raster object)
+##  keep most locations off land (`grad` is the raster object; 
+##  beta are -ve coefficients to keep x,y coords off land)
 trs <- simfit(fit,
               what = "predicted",
               reps = 100,
@@ -56,6 +57,9 @@ trs_flt <- sim_filter(trs, keep = 0.1, flag = 2)
 
 ### Re-route any simulated locations occurring on land back to the water
 ```{r reroute, eval=FALSE, message=FALSE}
+## use medium resolution rnaturalearth land polygons (map_scale = 50)
+## apply buffer of 20,000 m to ensure re-routed tracks are well off land (see 
+## pathroutr::prt_visgraph for more details)
 trs_flt_rr <- route_path(trs_flt, map_scale = 50, buffer = 20000)
 ```
 
@@ -101,16 +105,16 @@ plocs_sf <- grab(fit, "predicted", as_sf = TRUE) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTIPOINT")
-
+```
+\pagebreak
+```{r,eval=FALSE, message=FALSE}
 ## project & cast SSM-predicted locations to MULTILINESTRING for track lines
 pline_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
   sf::st_transform(crs = prj) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTILINESTRING")
-```
-\pagebreak
-```{r,eval=FALSE, message=FALSE}
+
 ## define map bounding box from simulated locations 
 bb_trs <- sf::st_bbox(trs_sf)  
 
@@ -159,7 +163,7 @@ p2 <- ggplot() +
   ggspatial::annotation_scale(height = unit(1.5, "mm"), aes(location = "br"))
 ```
 \pagebreak
-```{r, eval=FALSE, message=FALSE}
+```{r, eval=FALSE, message=FALSE, fig.width=9, fig.height=6}
 ## use highres land polygons for zoomed-in map
 world_shp <- rnaturalearth::ne_countries(scale = 10, returnclass = "sf")
 
