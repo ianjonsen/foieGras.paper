@@ -93,17 +93,21 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 }
 \end{center}
 
+\pagebreak
 # Abstract
-1.  Animal-borne sensor and tracking data are essential for understanding the ecology, behaviour and physiology of mobile or cryptic species. Biologically meaningful signals in these data can be obscured by noise due to imperfect measurement technology, and rigorous quality control is required before before comprehensive analysis can proceed.
+1.  Animal-borne sensor and tracking data are indispensable for understanding the ecology, behaviour and physiology of mobile or cryptic species. Meaningful signals in these data can be obscured by noise due to imperfect measurement technologies,  requiring rigorous quality control as part of any comprehensive analysis.  
 
-2.  State-space models are powerful tools that can separate artificial noise from biologically meaningful signals. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit sensor information. However, these are statistically complex models that can be challenging to fit to diverse animal tracking data sets.
+2.  State-space models are powerful tools that can separate noise from meaningful signals. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit sensor information. However, they are statistically complex models that can be challenging and time-consuming to fit to diverse animal tracking data sets.  
 
-3.  We introduce the R package `foieGras` that aims to 
+3.  The R package `foieGras` eases the tasks of conducting quality control on and behavioural inference from animal tracking data. This is achieved via: 1) a simple but extensible workflow that accommodates both novice and experienced users; 2) automated processes that alleviate complexity from data processing and model specification/fitting steps; 3) simple movement models coupled with a powerful numerical optimization approach for rapid and reliable model fitting.  
 
-4.  
+4.  We highlight `foieGras`' capabilities through three applications to real animal tracking data. Full R code for these and additional applications are included as Supporting Information so users can gain a deeper understanding of how to use `foieGras` for their own analyses.  
 
-### Keywords: 
+### Keywords:  
 
+animal movement, biologging, bio-telemetry, movement behaviour, move persistence, random walk, simulation, state-space model
+
+\pagebreak
 ```{r child = '01-intro.Rmd'}
 ```
 \FloatBarrier
@@ -123,7 +127,7 @@ We thank Marie Auger-Méthé for contributing original code to the movement pers
 IDJ developed the R package; WJG contributed harp seal data and to the R package; LP, GC, and RGH contributed little penguin data; CRM, RGH and MAH contributed Southern elephant seal data; IDJ and TAP developed the state-space models; IDJ wrote an initial draft of the manuscript with contributions from WJG; all authors contributed to the final manuscript.
 
 # Data Accessibility 
-All code and data used here are provided in the `foieGras` package for R or in the Supplementary Information. The latest stable and cross-platform tested version of the package (currently, 1.0-7) is available via ROpenSci's R-universe, at https://ianjonsen.r-universe.dev/ui#package:foieGras. The latest partially tested stable and development versions are available on the GitHub repository: https://github.com/ianjonsen/foieGras. An older version of `foieGras` (0.7-6) remains on CRAN at \url{https://CRAN.R-project.org/package=foieGras}, however, we recommend users upgrade to the latest R-universe version for full access to the functionality presented here. 
+All code used here is provided in the `foieGras` package for R or in the Supporting Information. Data are publicly available [here](http://url.org). The latest stable and cross-platform tested version of the package (currently, 1.0-7) is available via ROpenSci's R-universe, at https://ianjonsen.r-universe.dev/ui#package:foieGras. The latest partially tested stable and development versions are available on the GitHub repository: https://github.com/ianjonsen/foieGras. An older version of `foieGras` (0.7-6) remains on CRAN at \url{https://CRAN.R-project.org/package=foieGras}, however, we recommend users upgrade to the latest R-universe version for full access to the functionality presented here. 
  
 # ORCID
 *Ian D Jonsen* \url{https://orcid.org/0000-0001-5423-6076}  
