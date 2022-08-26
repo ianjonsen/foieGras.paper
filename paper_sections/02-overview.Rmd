@@ -16,7 +16,7 @@ Animal tracking data, consisting of a time-series of location coordinates, can b
 
 
 ## 2.2 | State-space model fitting - `fit_ssm`
-State-space models are fit using the function `fit_ssm` (Fig. \ref{fig:workflow}). The type of location data is automatically detected from the location quality classes that are typical of Argos data and that can be added by the researcher for other data types. Based on the location quality classes and optional information on measurement errors contained in the data, an appropriate measurement error model is selected for each observation \citep{Jonsen:2020}. Fits to single versus multiple individuals are handled automatically, with sequential SSM fits occurring in the latter case. No hierarchical or pooled estimation among individuals is currently available.
+State-space models are fit using the function `fit_ssm` (Fig. \ref{fig:workflow}). The type of location data is automatically detected from the location quality classes that are typical of Argos data and that can be added by the user for other data types. Based on the location quality classes and optional information on measurement errors contained in the data, an appropriate measurement error model is selected for each observation \citep{Jonsen:2020}. Fits to single versus multiple individuals are handled automatically, with sequential SSM fits occurring in the latter case. No hierarchical or pooled estimation among individuals is currently available.
 
 
 ```{r func_table, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}

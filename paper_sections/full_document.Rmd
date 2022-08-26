@@ -97,7 +97,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 # Abstract
 1.  Animal-borne sensor and tracking data are indispensable for understanding the ecology, behaviour and physiology of mobile or cryptic species. Meaningful signals in these data can be obscured by noise due to imperfect measurement technologies,  requiring rigorous quality control as part of any comprehensive analysis.  
 
-2.  State-space models are powerful tools that can separate noise from meaningful signals. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit sensor information. However, they are statistically complex models that can be challenging and time-consuming to fit to diverse animal tracking data sets.  
+2.  State-space models are powerful tools that can separate meaningful signals from noise. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit sensor information. However, they are complex statistical models that can be challenging and time-consuming to fit to diverse animal tracking data sets.  
 
 3.  The R package `foieGras` eases the tasks of conducting quality control on and behavioural inference from animal tracking data. This is achieved via: 1) a simple but extensible workflow that accommodates both novice and experienced users; 2) automated processes that alleviate complexity from data processing and model specification/fitting steps; 3) simple movement models coupled with a powerful numerical optimization approach for rapid and reliable model fitting.  
 
