@@ -88,7 +88,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \affaddr{\affmark[3]Environmental Defense Fund, Seattle, WA, United States}\\
 \affaddr{\affmark[4]Sydney Institute of Marine Science, Mosman, NSW, Australia}\\
 \affaddr{\affmark[5]Institute for Marine and Antarctic Studies, University of Tasmania, Hobart, TAS, Australia}\\
-\affaddr{\affmark[6]CSIRO Ocean and Atmosphere Research, Hobart, TAS, Australia}\\
+\affaddr{\affmark[6]CSIRO Oceans and Atmosphere, Hobart, TAS, Australia}\\
 \affaddr{\affmark[*]corresponding author, ian.jonsen@mq.edu.au}\\
 }
 \end{center}
