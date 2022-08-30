@@ -1,5 +1,5 @@
 ---
-title: '`foieGras` an R package for animal movement data: rapid quality control, behavioural estimation and simulation'
+title: '`foieGras`: an R package for animal movement data: rapid quality control, behavioural estimation and simulation'
 header-includes:
 - \usepackage{lineno}
 - \usepackage{placeins}
@@ -127,7 +127,7 @@ We thank Marie Auger-Méthé for contributing original code to the movement pers
 IDJ developed the R package; WJG contributed harp seal data and to the R package; LP, GC, and RGH contributed little penguin data; CRM, RGH and MAH contributed Southern elephant seal data; IDJ and TAP developed the state-space models; IDJ wrote an initial draft of the manuscript with contributions from WJG; all authors contributed to the final manuscript.
 
 # Data Accessibility 
-All code used here is provided in the `foieGras` package for R or in the Supporting Information. Data are publicly available [here](http://url.org). The latest stable and cross-platform tested version of the package (currently, 1.0-7) is available via ROpenSci's R-universe, at https://ianjonsen.r-universe.dev/ui#package:foieGras. The latest partially tested stable and development versions are available on the GitHub repository: https://github.com/ianjonsen/foieGras. An older version of `foieGras` (0.7-6) remains on CRAN at \url{https://CRAN.R-project.org/package=foieGras}, however, we recommend users upgrade to the latest R-universe version for full access to the functionality presented here. 
+All code used here is provided in the `foieGras` package for R or in the Supporting Information. Data will be made publicly available on Dryad [here](http://url.org). The latest stable and cross-platform tested version of the package (currently, 1.0-7) is available via ROpenSci's R-universe, at https://ianjonsen.r-universe.dev/ui#package:foieGras. The latest partially tested stable and development versions are available on the GitHub repository: https://github.com/ianjonsen/foieGras. An older version of `foieGras` (0.7-6) remains on CRAN at \url{https://CRAN.R-project.org/package=foieGras}, however, we recommend users upgrade to the latest R-universe version for full access to the functionality presented here. 
  
 # ORCID
 *Ian D Jonsen* \url{https://orcid.org/0000-0001-5423-6076}  
