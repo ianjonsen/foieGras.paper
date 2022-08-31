@@ -82,7 +82,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \vspace{-1cm}
 \begin{center}
 \author{
-{\bf Ian D. Jonsen\affmark[1,]\affmark[*], W. James Grecian\affmark[2], Lachlan Phillips\affmark[1], Gemma Carroll\affmark[3], Clive McMahon\affmark[4], Robert G. Harcourt\affmark[1], Mark A. Hindell\affmark[5], and Toby A. Patterson\affmark[6]}\\ \vspace{2mm}
+{\bf Ian D. Jonsen\affmark[1,]\affmark[*], W. James Grecian\affmark[2,]\affmark[a], Lachlan Phillips\affmark[1], Gemma Carroll\affmark[3], Clive McMahon\affmark[4], Robert G. Harcourt\affmark[1], Mark A. Hindell\affmark[5], and Toby A. Patterson\affmark[6]}\\ \vspace{2mm}
 \affaddr{\affmark[1]School of Natural Sciences, Macquarie University, Sydney, NSW, Australia}\\
 \affaddr{\affmark[2]Sea Mammal Research Unit, Scottish Oceans Institute, University of St Andrews, St Andrews, Fife, United Kingdom}\\
 \affaddr{\affmark[3]Environmental Defense Fund, Seattle, WA, United States}\\
@@ -90,6 +90,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 \affaddr{\affmark[5]Institute for Marine and Antarctic Studies, University of Tasmania, Hobart, TAS, Australia}\\
 \affaddr{\affmark[6]CSIRO Oceans and Atmosphere, Hobart, TAS, Australia}\\
 \affaddr{\affmark[*]corresponding author, ian.jonsen@mq.edu.au}\\
+\affaddr{\affmark[a]Present address: Department of Geography, Durham University, Durham, Durham, United Kingdom}\\
 }
 \end{center}
 
