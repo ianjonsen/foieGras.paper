@@ -25,7 +25,7 @@ require(foieGras)
 
 ```{r fit SSM1, echo = FALSE, eval=TRUE, message=FALSE}
 ## Load data from .csv file
-sese <- read.csv("../data/sese_extra.csv")
+sese <- read.csv("data/sese_extra.csv")
 
 ## fit `mp` SSM, using speed filter of 4 m/s to exclude extreme observations
 fit <- fit_ssm(sese, vmax=4, model="mp", time.step=12, 

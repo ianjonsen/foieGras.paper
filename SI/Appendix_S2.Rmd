@@ -22,10 +22,10 @@ require(foieGras)
 ```{r fit SSM, eval=FALSE, message=FALSE}
 
 ## Load GPS location data from .csv file
-lipe <- read.csv("../data/lipe_gps_ex32.csv")
+lipe <- read.csv("data/lipe_gps_ex32.csv")
 
 ## Load prey capture data from .csv file
-lipe.pc <- read.csv("../data/lipe_pc_ex32.csv")
+lipe.pc <- read.csv("data/lipe_pc_ex32.csv")
 
 ## fit `crw` SSM, using: 1) speed filter (vmax) of 5 m/s to exclude any extreme 
 ##   observations; 2) excluding any locations occurring < 5 s apart in time (min.dt); 
