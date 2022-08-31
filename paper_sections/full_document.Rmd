@@ -1,5 +1,5 @@
 ---
-title: '`foieGras`: an R package for animal movement data: rapid quality control, behavioural estimation and simulation'
+title: '`foieGras`, an R package for animal movement data: rapid quality control, behavioural estimation and simulation'
 header-includes:
 - \usepackage{lineno}
 - \usepackage{placeins}
