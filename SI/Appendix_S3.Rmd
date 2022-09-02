@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 We draw on IMOS southern elephant seal tracking data from Iles Kerguelen to infer move persistence, $\gamma_t$, along four tracks. We fitted the `mp` SSM with a 12-h prediction interval with `fit_ssm()`, using the Argos Kalman filter-derived error ellipse information provided with each observation (Jonsen et al. 2020). The `mp` SSM simultaneously estimates locations and $\gamma_t$, and their uncertainties. We then assess how $\gamma_t$ changes along the seals' tracks to infer regions where the seals spend disproportionately more or less time during their foraging trips. 
 
+This example application also illustrates how the SSM can be fit using parallel processing, leveraging the `future` and `furrr` R packages, to reduce computation time. This approach is not typically necessary for a data set consisting of only 4 individual tracks, but is a valuable time-saver for larger data sets.
+
 
 The three southern elephant seals on foraging trips to the Antarctic shelf region all engaged in spatially constrained bouts of low move persistence while in the shelf region (Fig. \ref{fig:extra} a,c,d; blue circles in e). Without additional data it is unclear exactly what these bouts of low horizontal move persistence represent. They could result from area-restricted search and foraging within dense prey aggregations, physical constraints of dense ice on horizontal movements, haulout (resting) on sea-ice, or some combination of these. Conversely, the seal on a pelagic foraging trip engaged in slower, more meandering movements with less spatially constrained bouts of lower move persistence (Fig. \ref{fig:extra} b, e). This general movement pattern may be consistent with searching for suitable foraging resources within the highly variable eddy fields between the Subantarctic and Polar Fronts (Jonsen et al. 2019).  
 
@@ -20,6 +22,8 @@ require(ggspatial)
 require(ggforce)
 require(patchwork)
 require(sf)
+require(future)
+require(furrr)
 require(foieGras)
 ```
 
@@ -27,9 +31,27 @@ require(foieGras)
 ## Load data from .csv file
 sese <- read.csv("data/sese_extra.csv")
 
+## invoke parallel multisession
+future::plan("multisession")
+
+## split individual fit_ssm jobs across processors
 ## fit `mp` SSM, using speed filter of 4 m/s to exclude extreme observations
-fit <- fit_ssm(sese, vmax=4, model="mp", time.step=12, 
-               control = ssm_control(verbose = 0))
+fit <- sese %>% 
+  split(.$id) %>%
+  furrr::future_map(~ try(fit_ssm(
+      x = .x,
+      vmax = 4,
+      model = "mp",
+      time.step = 12,
+      control = ssm_control(verbose = 0)
+    ), silent = TRUE),
+    .progress = FALSE,
+    .options = furrr::furrr_options(seed = TRUE)
+    ) %>%
+    do.call(rbind, .)
+
+## close multisession
+future::plan("sequential")
 ```
 
 ```{r mp time-series1, echo=FALSE, eval=TRUE, message=FALSE}
@@ -146,14 +168,33 @@ require(sf)
 require(foieGras)
 ```
 
-### Fit `mp` SSM with 12-h `time.step` to infer movement persistence along 4 southern elephant seal tracks
+### Fit `mp` SSM with 12-h `time.step` to infer movement persistence along 4 southern elephant seal tracks. Use `future` and `furrr` R packages to fit SSM to individual seal tracks using parallel processing for computation speed-up.
 ```{r fit SSM, eval=FALSE, message=FALSE}
 
 ## Load data from .csv file
 sese <- read.csv("../data/sese_extra.csv")
 
+## invoke parallel multisession
+future::plan("multisession")
+
+## split individual fit_ssm jobs across processors
 ## fit `mp` SSM, using speed filter of 4 m/s to exclude extreme observations
-fit <- fit_ssm(sese, vmax=4, model="mp", time.step=12)
+fit <- sese %>% 
+  split(.$id) %>%
+  furrr::future_map(~ try(fit_ssm(
+      x = .x,
+      vmax = 4,
+      model = "mp",
+      time.step = 12,
+      control = ssm_control(verbose = 0)
+    ), silent = TRUE),
+    .progress = FALSE,
+    .options = furrr::furrr_options(seed = TRUE)
+    ) %>%
+    do.call(rbind, .)
+
+## close multisession
+future::plan("sequential")
 ```
 
 ### Plot move persistence estimates as time-series, 1 panel per seal
@@ -173,7 +214,6 @@ p1 <- plot(fit,
         axis.text = element_text(size = 7))
 ```
 
-\pagebreak
 ### Map move persistence estimates along the SSM-estimated seal tracks
 ```{r map, eval=FALSE, message=FALSE, fig.width=6, fig.height=7}
 
