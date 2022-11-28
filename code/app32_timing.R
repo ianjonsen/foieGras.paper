@@ -1,0 +1,13 @@
+fit05 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 0.5/60)
+fit1 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 1/60)
+fit2 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 2/60)
+fit4 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 4/60)
+fit8 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 8/60)
+fit16 <- fit_ssm(peng, min.dt=5, model = "crw", time.step = 16/60)
+
+fmp05 <- fit_mpm(fit05, model = "jmpm")
+fmp1 <- fit_mpm(fit1, model = "jmpm")
+fmp2 <- fit_mpm(fit2, model = "jmpm")
+fmp4 <- fit_mpm(fit4, model = "jmpm")
+fmp8 <- fit_mpm(fit8, model = "jmpm")
+fmp16 <- fit_mpm(fit16, model = "jmpm")

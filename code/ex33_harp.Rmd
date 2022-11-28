@@ -21,7 +21,7 @@ require(patchwork)
 
 ```{r fit ssm, message = FALSE, results = 'hide'}
 
-locs <- readRDS("../data/ex34.rds")
+locs <- readRDS("../data/ex33.rds")
 fit <- fit_ssm(locs, model = "crw", time.step = 12, vmax = 4)
 
 # Extract fitted values from model
