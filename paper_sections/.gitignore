@@ -3,4 +3,6 @@ rosm.cache
 code/rosm.cache
 *_files
 full_document.tex
+full_document.pdf
+full_document.docx
 .DS_Store
