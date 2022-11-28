@@ -41,10 +41,10 @@ res.crw <- osar(fit.crw)
 ```{r panel a, eval=FALSE, message=FALSE}
 
 ## Use sf package to project locations & convert SSM-estimated locations to lines
-dat <- grab(fit.rw[1,], "d", as_sf = TRUE) %>% 
+dat <- grab(fit.rw, "d", as_sf = TRUE) %>% 
   sf::st_transform("+proj=stere +lon_0=90 +units=km")
 
-loc.rw <- grab(fit.rw[1,], "f", as_sf = TRUE) %>%
+loc.rw <- grab(fit.rw, "f", as_sf = TRUE) %>%
   sf::st_transform("+proj=stere +lon_0=90 +units=km") 
 
 line.rw <- loc.rw %>%
@@ -52,7 +52,7 @@ line.rw <- loc.rw %>%
   dplyr::summarise(do_union = FALSE, .groups = "drop") %>%
   sf::st_cast("MULTILINESTRING")
 
-loc.crw <- grab(fit.crw[1,], "f", as_sf = TRUE) %>%
+loc.crw <- grab(fit.crw, "f", as_sf = TRUE) %>%
   sf::st_transform("+proj=stere +lon_0=90 +units=km") 
 
 line.crw <- loc.crw %>%

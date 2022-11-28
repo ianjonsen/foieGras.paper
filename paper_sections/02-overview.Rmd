@@ -5,24 +5,20 @@ output:
 ---
 # 2 | `foieGras` overview
 
-```{r part_2_premble, include=FALSE}
+```{r part_2_preamble, include=FALSE}
 #### Code for part 2: foieGras Overview ####
 ```
 The workflow for `foieGras` is deliberately simple, with many of the usual track data processing checks handled automatically. Here we outline the main aspects of the `foieGras` package. The package's main functions with brief code examples are listed in Table \ref{tab:func_table_kable}, and a generalized workflow with example code is depicted in Figure \ref{fig:workflow}. 
 
 
-## 2.1 | Data preparation
-Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a data frame using standard functions such as `read.csv`. Possible input data formats are shown in Figure \ref{fig:workflow}. More details on input data formats are provided in the Overview vignette (https://ianjonsen.github.io/foieGras/articles/Overview.html). 
-
-
-## 2.2 | State-space model fitting - `fit_ssm`
-State-space models are fit using the function `fit_ssm` (Fig. \ref{fig:workflow}). The type of location data is automatically detected from the location quality classes that are typical of Argos data and that can be added by the user for other data types. Based on the location quality classes and optional information on measurement errors contained in the data, an appropriate measurement error model is selected for each observation \citep{Jonsen:2020}. Fits to single versus multiple individuals are handled automatically, with sequential SSM fits occurring in the latter case. No hierarchical or pooled estimation among individuals is currently available.
-
+## 2.1 | Data input - `format_data`
+Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a `data.frame` or `tibble` using standard functions such as `read.csv` or `read_csv`. Possible default input data formats are shown in Figure \ref{fig:workflow}. The `format_data()` function can be used to coerce non-default data formats into that expected by `fit_ssm()`. `format_data()` can be used explicitly in a workflow or it will be called automatically by `fit_ssm()`. More details on input data formats and the use of `format_data()` are provided in the Overview vignette (https://ianjonsen.github.io/foieGras/articles/Overview.html). Additionally, `foieGras` can accept data as an `sf-tibble` or `sf data.frame` with locations in any recognized projection, in which case the SSM-estimated locations will be returned in the same projection. 
 
 ```{r func_table, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
 func_table <- data.frame(
-  Function = c("fit_ssm", "fit_mpm", "grab", "osar", "map", "sim", "simfit", "sim_filter", "route_path", "plot.ssm_df", "plot.osar"),
-  Description = c("Fit a State-Space Model to location data",
+  Function = c("format_data()", "fit_ssm()", "fit_mpm()", "grab()", "osar()", "map()", "sim()", "sim_fit()", "sim_filter()", "route_path()", "plot.ssm_df()", "plot.osar()"),
+  Description = c("Coerce tracking data into the format expected by `fit_ssm()`", 
+                  "Fit a State-Space Model to location data",
                   "Fit a Move Persistence Model to location data",
                   "Extract fitted/predicted/observed locations from a foieGras model, with or without projection information",
                   "Estimate One-Step-Ahead Residuals from a foieGras SSM",
@@ -34,7 +30,8 @@ func_table <- data.frame(
                   "Plot the fit of a foieGras SSM to data",
                   "Plot One-Step-Ahead Residuals from a foieGras SSM"
   ),
-  Code = c("fit <- fit_ssm(data, model, time.step, ...)",
+  Code = c("data <- format_data(x, ...)", 
+           "fit <- fit_ssm(data, model, time.step, ...)",
            "fmp <- fit_mpm(fit, model, ...)",
            "locs <- grab(fit, what = `predicted', ...)",
            "res <- osar(fit, ...)",
@@ -53,7 +50,7 @@ func_table <- data.frame(
 ```{r func_table_kable, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE, purl=FALSE}
 kable(func_table, 
       format = table_out_format, 
-      caption="Main \\texttt{foieGras} functions with description and example code. In the code examples, \\texttt{...} denotes optional arguments. Details on these arguments can be found in the package help files for each function (e.g., \\texttt{?fit\\_ssm}).", 
+      caption="Main \\texttt{foieGras} functions with description and example code. In the code examples, \\texttt{...} denotes optional arguments. Details on these arguments can be found in the package help files for each function (e.g., \\texttt{?fit\\_ssm()}).", 
       booktabs = TRUE) %>%
   column_spec(1, monospace = TRUE) %>%
   column_spec(2, latex_column_spec = ">{\\\\hangindent=2em}p{25em}" ) %>%
@@ -61,38 +58,97 @@ kable(func_table,
 kableExtra::landscape()
 ```
 
-There are a large number of optional arguments that can be specified in `fit_ssm`, and these are explained in the package documentation. We focus only the essential arguments here:  
+
+## 2.2 | State-space model fitting - `fit_ssm()`
+State-space models are fit using `fit_ssm()` (Fig. \ref{fig:workflow}). Data type is detected from the location quality classes typical of Argos data; classes can be added for other data types. Based on the location quality classes and optional information on measurement errors contained in the data, an appropriate measurement error model is selected for each observation \citep{Jonsen:2020}. Fits to single versus multiple individuals are handled automatically, with sequential fitting for the latter. No hierarchical or pooled estimation among individuals is currently possible. `foieGras`' process and measurement error models are outlined in Table \ref{tab:ssm_table_kable}.
+
+Many optional arguments can be specified in `fit_ssm()`, and are explained in the package documentation. We focus only the essential ones here:  
 
 - `data` the input data structured as illustrated in Fig. \ref{fig:workflow}
-- `model` the process model to be used (one of `rw`, `crw`, or `mp`)
+- `model` the process model to be used (one of `rw`, `crw`, or `mp`; see Table \ref{tab:ssm_table_kable} for details)
 - `time.step` the prediction time interval (expressed in hours)
 
-The function first invokes an automated data processing stage where the data type and measurement error model(s) are determined, observation times are sorted and checked for duplicates, and a speed filter identifies potential extreme locations to be ignored by the SSM. The SSM is then fitted to the processed data, with the user-specified process model and automatically selected measurement error model(s). The joint likelihood is optimized numerically using either of the standard R optimizers, `optim` or `nlminb`. The R package `TMB`, Template Model Builder \citep{Kristensen:2016}, is used to compute the gradient function in C++. A fit object is returned as a nested data frame, listing the individual animal id(s), basic convergence information and a list of model output including estimated parameters and states, processed data, and diagnostic information. A simple data frame of SSM fitted (location estimates corresponding to the observation times) or predicted values (locations predicted at regular `time.step` intervals) can be extracted using the `grab` function. Parameter estimates, AIC and other model fit information can be viewed using the `summary` function.
+The function invokes an automated data processing stage where the data type and measurement error model(s) are determined, observation times are sorted and checked for duplicates, and a speed filter identifies extreme locations to be ignored by the SSM. The SSM is then fitted to the processed data, with the user-specified process model and automatically selected measurement error model(s). The R package `TMB`, Template Model Builder \citep{Kristensen:2016}, is used to compute the gradient function in C++, which greatly speeds model fitting. A fit object is returned as a nested `tibble`, listing the individual animal id(s), basic convergence information and a list of model output including estimated parameters and states, processed data, and diagnostic information. A data.frame of SSM fitted (location estimates corresponding to the observation times) or predicted values (locations predicted at regular `time.step` intervals) can be extracted using the `grab()` function. Parameter estimates, AIC and other information are viewed using the `summary()` function. Further details on SSM fitting are here: \url{(https://ianjonsen.github.io/foieGras/articles/SSM_fitting.html)}.
+
+```{r ssm_table, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
+ssm_table <- data.frame(
+  Model = c("\\underline{Process Models}",
+            "\\texttt{rw} - Random walk", 
+            "\\texttt{crw} - Correlated random walk", 
+            "\\texttt{mp} - Move persistence", 
+            "\\underline{Measurement Error Models}",
+            "\\texttt{LS} - Argos least-squares", 
+            "\\texttt{KF} - Argos Kalman filter", 
+            "\\texttt{G} - GPS", 
+            "\\texttt{GL} - Geolocation"), 
+  Description = c("",
+                  "Movements are random in direction and magnitude.",
+                  "Movements are random and correlated in direction and magnitude.",
+                  "Movements are random with correlation in direction and magnitude that varies in time.",
+                  "",
+                  'Location measurement errors assigned via Argos location quality class and error multiplication factors (see \\texttt{?emf} for details).', 
+                  'Location measurement errors specified by error ellipse variables (\\texttt{smaj}, \\texttt{smin}, \\texttt{eor}) present in data (see Overview vignette for details).', 
+                  "Location measurement errors are assumed by default to be 10\\% of Argos location quality class 3 (see \\texttt{?emf} for details).", 
+                  "Location measurement errors are specified by \\texttt{lonerr}, \\texttt{laterr} variables present in data."),
+  Parameters = c("",
+                 '$\\rho_p$, $\\sigma_x$, $\\sigma_y$',
+                 'D',
+                 '$\\rho_p$, $\\sigma_x$, $\\sigma_y$, $\\sigma_g$',
+                 "",
+                 '$\\rho_o$, $\\tau_x$, $\\tau_y$',
+                 '$\\psi$',
+                 '$\\rho_o$, $\\tau_x$, $\\tau_y$',
+                 '$\\rho_o$, $\\tau_x$, $\\tau_y$')
+)
+```
+
+```{r ssm_table_kable, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE, purl=FALSE}
+kable(ssm_table, 
+      format = table_out_format, 
+      caption="\\texttt{foieGras} movement process and measurement error models with brief descriptions and parameters. The process and measurement error models are the two components of a state-space model. Parameters listed are those estimated when fitting the state-space model to data, these estimates can be accessed via \\texttt{summary()} (see Overview vignette for details).", 
+      booktabs = TRUE, escape = FALSE) %>%
+  column_spec(2, latex_column_spec = ">{\\\\hangindent=1em}p{33em}" ) %>%
+  kableExtra::footnote(general = c('$\\\\rho_p$ - correlation between x and y process variances (\\\\texttt{rho\\\\_p})',
+                                   '$\\\\sigma_x$, $\\\\sigma_y$ - process standard deviation in x and y directions, respectively (\\\\texttt{sigma\\\\_x, sigma\\\\_y})',
+                                   'D - process variance in x and y directions (\\\\texttt{D})',
+                                   '$\\\\sigma_g$ - standard deviation of random walk on $\\\\gamma_t$  (\\\\texttt{sigma\\\\_g})',
+                                   '$\\\\rho_o$ - correlation between x and y measurement error variances (\\\\texttt{rho\\\\_o})',
+                                   '$\\\\tau_x$, $\\\\tau_y$ - standard deviation of measurement errors in x and y directions, respectively (\\\\texttt{tau\\\\_x, tau\\\\_y})',
+                                   '$\\\\psi$ - scaling parameter to account for potential bias in semi-minor axis of Argos KF error ellipses (\\\\texttt{psi})'
+                                   ),
+                       escape = FALSE, general_title = ""
+                       ) %>%
+kableExtra::landscape()
+```
 
 
-```{r fig 1, echo=FALSE, message=FALSE, results='markup', cache=TRUE, fig.cap="\\label{fig:workflow} A generalized \\texttt{foieGras} workflow showing required input data formats, model fitting, model checking/validation, visualisaiton of movement behaviour estimates, track simulation and re-routing around land. Example code is displayed for each stage."}
+```{r fig 1, echo=FALSE, message=FALSE, results='markup', cache=TRUE, fig.cap="\\label{fig:workflow} A generalized \\texttt{foieGras} workflow showing default input data formats, model fitting, model checking/validation, visualisaiton of movement behaviour estimates, track simulation and re-routing around land. Example code is displayed for each stage. Details on default input data formats and options for handling other formats are provided in the Overview vignette."}
 knitr::include_graphics("../figures/workflow_schematic_v2.png", dpi=455)
 ```
 
 
-## 2.3 | Behavioural estimation - `fit_ssm`, `fit_mpm`
-Move persistence, an index of movement behaviour, can be estimated as a continuous-valued (0 - 1), time-varying latent variable that represents changes in movement pattern based on autocorrelation in speed and direction \citep{Jonsen:2019}. There are two approaches in `foieGras` for estimating move persistence. The first is to use `fit_ssm` with `model = 'mp'`, which fits a continuous-time move persistence model in state-space form and thereby simultaneously estimates true locations and move persistence from the error-prone telemetry data (Fig. \ref{fig:workflow}). This approach is most appropriate for fitting to irregularly-timed and error-prone Argos data as both aspects are taken into account explicitly. The second is to use `fit_mpm`, which can take as input either location data or SSM-estimated locations from an `fit_ssm` model fit object. This approach is generally more appropriate when the data have minimal measurement error (e.g., GPS locations; see Application 3.2). 
+## 2.3 | Behavioural estimation - `fit_ssm()`, `fit_mpm()`
+Move persistence, an index of movement behaviour, can be estimated as a continuous-valued (0 - 1), time-varying latent variable that represents changes in movement pattern based on autocorrelation in speed and direction \citep{Jonsen:2019}. There are two approaches in `foieGras` for estimating move persistence. The first is to use `fit_ssm()` with `model = 'mp'`, which fits a continuous-time move persistence model in state-space form and thereby simultaneously estimates true locations and move persistence from the error-prone telemetry data (Fig. \ref{fig:workflow}). This approach is most appropriate for fitting to irregularly-timed and error-prone Argos data as both aspects are taken into account explicitly. The second is to use `fit_mpm()`, which can take as input either location data or SSM-estimated locations from an `fit_ssm()` model fit object. This approach is generally more appropriate when the data have minimal measurement error (e.g., GPS locations; see Application 3.2). Further details on fitting move persistence models are here: \url{https://ianjonsen.github.io/foieGras/articles/Move_persistence_models.html}.
 
-## 2.4 | Model checking and visualization - `osar`, `plot`, `map`
-Before using fitted or predicted locations, a `fit_ssm` model fit should be checked and visualized to confirm that the model adequately describes the data. There is no simple way to calculate residuals for latent variable models that have non-finite state-spaces and that may be nonlinear, but they can be computed based on iterative forecasts of the model \citep{Thygesen:2017}. The `osar` function computes one-step-ahead (prediction) residuals via the  `oneStepPredict` function from the `TMB` R package \citep{Kristensen:2016}. A set of residuals are calculated for the `x` and `y` values corresponding to the fitted values from the SSM. A generic `plot` (`plot.osar`) method provides an easy way to visualize the prediction residuals as time-series plots, quantile-quantile plots, or autocorrelation functions (Fig. \ref{fig:workflow}).
+## 2.4 | Model checking and visualization - `osar()`, `plot()`, `map()`
+Before using fitted or predicted locations, a `fit_ssm()` model fit should be checked and visualized to confirm that the model adequately describes the data. The `osar()` function computes one-step-ahead (prediction) residuals via the `oneStepPredict()` function from the `TMB` R package \citep{Kristensen:2016,Thygesen:2017}. A set of residuals are calculated for the `x` and `y` values corresponding to the fitted values from the SSM. A generic `plot()` (`plot.osar`) method provides an easy way to visualize the prediction residuals as time-series plots, quantile-quantile plots, or autocorrelation functions (Fig. \ref{fig:workflow}). Further details on model validation are here: \url{https://ianjonsen.github.io/foieGras/articles/SSM_validation.html}.
 
-State-space model fits to data can also be visualised by using the generic `plot` (`plot.ssm_df`) function on a model fit object. Options exist to plot fitted or predicted values along with observations as either paired, 1-D time-series (using the `type = 1` argument), or as 2-D tracks (`type = 2`) with 95% confidence intervals or ellipses. These plots provide a rapid check on SSM fits to data. Additionally, when the fitted SSM is the move persistence model (i.e., `model = 'mp'`), 1-D time-series (`type = 3`) or 2-D track plots (`type = 4`) of move persistence estimates can be displayed (Fig. \ref{fig:workflow}).
+State-space model fits to data can also be visualised by using the generic `plot()` (`plot.ssm_df`) function on a model fit object. Options exist to plot fitted or predicted values along with observations as either paired, 1-D time-series (using the `type = 1` argument), or as 2-D tracks (`type = 2`) with 95% confidence intervals or ellipses. These plots provide a rapid check on SSM fits to data. Additionally, when the fitted SSM is the move persistence model (i.e., `model = 'mp'`), 1-D time-series (`type = 3`) or 2-D track plots (`type = 4`) of move persistence estimates can be displayed (Fig. \ref{fig:workflow}).
 
-`fit_ssm` model fits can be mapped using the `map` function for single or multiple individuals. By default, `map` uses the coastline data from the `rnaturalearth` R package \citep{rnaturalearth} at medium or high resolution (Fig. \ref{fig:workflow}), but can also use tiled maps for finer-scale detail, via the `rosm` \citep{rosm} and `ggspatial` \citep{ggspatial} R packages. Mapping aesthetics (e.g., plot symbols, sizes, colours, fills) can be customized via the `aes` argument and use of the `aes_lst` function. See code in SI for examples.
+`fit_ssm()` model fits can be mapped using `map()` for single or multiple individuals. By default, `map()` uses the coastline data from the `rnaturalearth` R package \citep{rnaturalearth} at medium or high resolution (Fig. \ref{fig:workflow}), but can also use tiled maps for finer-scale detail, via the `rosm` \citep{rosm} and `ggspatial` \citep{ggspatial} R packages. Mapping aesthetics (e.g., plot symbols, sizes, colours, fills) can be customized via the `aes` argument and use of the `aes_lst()` function. See code in SI for examples. Further details on mapping tracks are here: \url{https://ianjonsen.github.io/foieGras/articles/Mapping.html}.
 
 All `foieGras` visualizations draw on the `ggplot2` R package \citep{ggplot2}, with multi-panel plots also using the `patchwork` R package \citep{patchwork}, and generally can be modified through additive calls in the usual `ggplot2` manner. See code in SI for examples.
 
-## 2.5 | Simulation - `sim`, `simfit`, `sim_filter`
-Track simulation can be a helpful, yet informal, way of evaluating the degree to which statistical movement models capture essential features of animal movement data \citep{Michelot:2017}. The `sim` function can simulate a variety of movement process, including the `rw`, `crw`, and `mp` process models, as well as simple multiple movement state switching processes.
+## 2.5 | Simulation - `sim()`, `sim_fit()`, `sim_filter()`
+Track simulation can be a helpful, yet informal, way of evaluating the degree to which statistical movement models capture essential features of animal movement data \citep{Michelot:2017}. A variety of movement processes are simulated using `sim()`, including the `rw`, `crw`, and `mp` process models, as well as `rw` and `crw` models with switching between multiple movement states that are not available in `foieGras`'s SSM's. `sim()` is intended as a general tool for random track simulation for a variety of purposes such as qualitative comparisons to real data, or evaluation of SSM estimation biases.
 
-Simulation is also used frequently in habitat usage modelling to provide a measure of habitat availability \citep{Aarts:2012} by generating a source of 'background' points representing a null model of the distribution of foraging animals in the absence of external drivers \citep{Raymond:2015}. The `simfit` function extracts movement parameters from an SSM fit object and simulates random tracks of the same duration from these parameters. The argument `cpf = TRUE` allows simulation of central place foragers by ensuring that tracks start and end at approximately the same location. Movements can also be constrained to remain mostly in water via a potential function \citep{Preisler:2013}, using included gradient rasters and the `grad` and `beta` arguments. These are illustrated in the code for Application 3.3.
+The `sim_fit()` function is intended for random track simulation in support of habitat usage and similar analyses. `sim_fit()` extracts movement parameters from an SSM fit object and simulates random tracks based on these parameters and with the same duration as the SSM-estimated track. `sim_fit()` has optional arguments that impose additional constraints on the simulated tracks that would be too computationally challenging to incorporate into the SSM. Whereas the SSM is constrained by the data, the simulated tracks are relatively unconstrained and so the following arguments allow the simulations to more closely approximate the real tracks. 
 
-The choice of null points can impact the performance of habitat suitability models \cite{Phillips:2009}, and so the `sim_filter` function provides a tool to filter the simulated tracks based on their similarity to the original path. Filtering uses one of two metrics that capture the difference in the net displacement and bearing between the two paths (see `?similarity_flag` for more detail). These metrics are motivated by the 'flag value' described in \cite{Hazen:2017}. The the quantile of flag values to be retain is specified via the `keep` argument; i.e. `keep = 0.25` (the default) will return a `simfit` object containing those simulated tracks with flag values in the top 25% of values calculated for the input `simfit` object (Fig. \ref{fig:workflow}).
+The argument `cpf = TRUE` allows simulation of central place foragers by ensuring that tracks start and end at approximately the same location. Movements can also be constrained to remain mostly in water via a potential function \citep{Preisler:2013}, using gradient rasters included in `foieGras` and the `grad` and `beta` arguments. These are illustrated in the code for Application 3.3.  
 
-## 2.6 | Path rerouting - `route_path`
-As the SSMs implemented in `foieGras` have no information about potential barriers to animal movement it is possible for locations to be estimated in implausible locations, such as on land for marine species. To overcome this, `foieGras` makes use of the `pathroutr` R package \citep{pathroutr} to efficiently re-route locations from land back to water by using visibility graphs \citep{Jan:2014}. The `route_path` function can be applied to either an SSM fit object or the simulations generated by `simfit`. When the input is an SSM fit object the re-routed path can be appended to the object for visualization and use in subsequent analyses. When the input is a `simfit` object the locations within the simulation are replaced with the re-routed paths (Fig. \ref{fig:workflow}). We illustrate the latter in Application 3.3. 
+The `sim_filter()` function provides a tool to filter the simulated tracks based on their similarity to the SSM-estimated track. Here, similarity is calculated as the sum of normalized difference in net displacement (km) and overall bearing (deg) between the SSM-estimated track and the simulated tracks. Filtering uses one of two metrics that capture the differences between the two tracks (see `?similarity_flag` for more detail). These metrics are motivated by the 'flag value' described in \cite{Hazen:2017}. The the quantile of flag values to be retain is specified via the `keep` argument; i.e. `keep = 0.25` (the default) will return a `sim_fit` object containing those simulated tracks with flag values in the top 25% of values calculated for the input `sim_fit` object (Fig. \ref{fig:workflow}). 
+
+Further details on track simulation are here: \url{https://ianjonsen.github.io/foieGras/articles/Track_simulation.html}.
+
+## 2.6 | Path rerouting - `route_path()`
+As the SSMs implemented in `foieGras` have no information about potential barriers to animal movement it is possible for locations to be estimated in implausible locations, such as on land for marine species. To overcome this, `foieGras` makes use of the `pathroutr` R package \citep{pathroutr} to efficiently re-route locations from land back to water by using visibility graphs \citep{Jan:2014}. `route_path()` can be applied to either an SSM fit object or the simulations generated by `sim_fit()`. Users must apply `route_path()` themselves, this is not done automatically in `foieGras`. When the input is an SSM fit object the re-routed path can be appended to the object for visualization and use in subsequent analyses. When the input is a `sim_fit` object the locations within the simulation are replaced with the re-routed paths (Fig. \ref{fig:workflow}). We illustrate the latter in Application 3.3. Further details on path rerouting are here: \url{https://ianjonsen.github.io/foieGras/articles/Path_rerouting.html}.

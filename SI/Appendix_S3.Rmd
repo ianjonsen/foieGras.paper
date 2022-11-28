@@ -48,7 +48,7 @@ fit <- sese %>%
     .progress = FALSE,
     .options = furrr::furrr_options(seed = TRUE)
     ) %>%
-    do.call(rbind, .)
+    bind_rows(.)
 
 ## close multisession
 future::plan("sequential")
@@ -191,7 +191,7 @@ fit <- sese %>%
     .progress = FALSE,
     .options = furrr::furrr_options(seed = TRUE)
     ) %>%
-    do.call(rbind, .)
+    bind_rows(.)
 
 ## close multisession
 future::plan("sequential")

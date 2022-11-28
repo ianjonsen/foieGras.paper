@@ -6,13 +6,10 @@ output:
 ---
 # 3 | Applications
 
-```{r part_3_premble, include=FALSE}
+```{r part_3_preamble, include=FALSE}
 #### Code for part 3: Applications ####
 ```
-We illustrate the main capabilities of `foieGras` through a set of applications that are for demonstration purposes. Complete code for reproducing the applications and for gaining a deeper understanding of `foieGras` functions are provided in the Supporting Information. Data used in the application are available [here](http://url.org).
-
-## 3.1 | SSM validation with prediction residuals
-We used a sub-adult male southern elephant seal (*Mirounga leonina*) track included as example data in `foieGras` (`sese2`, id: ct36-E-09), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. The data are temporally irregular Argos Least-Squares locations. We fitted both the `rw` and `crw` models using `fit_ssm()` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculated prediction residuals using `osar()`, and then used the generic `plot` method for `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}). R code is available in Appendix S1 (Supporting Information).
+We illustrate the main capabilities of `foieGras` with three applications. Complete R code for reproducing the applications and for gaining a deeper understanding of `foieGras` functions are provided in the Supporting Information (Appendices S1 - S4). Data used in the applications are available [on Dryad](http://url.org).
 
 ```{r ex31, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=7.5, cache=TRUE, fig.cap="\\label{fig:ex1} State-space model fits to a southern elephant seal track with finer scale detail inset (a), and diagnostic plots for assessing goodness-of-fit of the `rw` (b - prediction residual time-series; d - prediction residual autocorrelation) and `crw` (c,e) state-space models. All residual plots generated using the `plot.osar` function."}
 
@@ -37,6 +34,51 @@ line.ssm <- bind_rows(line.rw, line.crw) |>
   mutate(SSM = c("rw","crw")) |>
   select(id, SSM, geometry)
 
+## confidence ellipses
+ssm.rw <- grab(fit.rw[1,], "f", as_sf=TRUE) %>% 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+xy <- sf::st_coordinates(ssm.rw)
+ssm.rw <- bind_cols(ssm.rw, xy) %>% 
+  rename(x=X, y=Y) %>%
+  select(id,date, x, y, everything()) %>%
+  split(., .$id)
+
+conf_poly <- lapply(ssm.rw, function(x) {
+          conf <- lapply(1:nrow(x), function(i)
+            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+          tmp <- lapply(conf, function(x)
+            sf::st_polygon(list(x)))
+          sf::st_multipolygon(tmp)
+        })
+
+conf.rw_sf <- sf::st_as_sf(sf::st_as_sfc(conf_poly)) 
+conf.rw_sf$id <- unique(fit.rw[1,]$id)
+
+ssm.crw <- grab(fit.crw[1,], "f", as_sf=TRUE) %>% 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+xy <- sf::st_coordinates(ssm.crw)
+ssm.crw <- bind_cols(ssm.crw, xy) %>% 
+  rename(x=X, y=Y) %>%
+  select(id,date, x, y, everything()) %>%
+  split(., .$id)
+
+conf_poly <- lapply(ssm.crw, function(x) {
+          conf <- lapply(1:nrow(x), function(i)
+            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+          tmp <- lapply(conf, function(x)
+            sf::st_polygon(list(x)))
+          sf::st_multipolygon(tmp)
+        })
+
+conf.crw_sf <- sf::st_as_sf(sf::st_as_sfc(conf_poly)) 
+conf.crw_sf$id <- unique(fit.crw[1,]$id)
+
+conf.ssm <- bind_rows(conf.rw_sf, conf.crw_sf) |>
+  mutate(SSM = c("rw","crw")) |>
+  select(id, SSM, x) |>
+  rename(geometry = x)
+sf::st_crs(conf.ssm) <- sf::st_crs(line.ssm)
+
 zbox <- structure(list(id = c(1,1,1,1,1), 
                        lon = c(107, 110.25, 110.25, 107, 107), 
                        lat = c(-66.5, -66.5, -64.9, -64.9, -66.5)), 
@@ -56,11 +98,17 @@ bb_zbox <- sf::st_bbox(zbox_sf)
 pA <- ggplot() +
   geom_sf(data = dat, 
              col = "orange", 
-             size = 1.25) +
+             shape = 3,
+             size = 1) +
+  geom_sf(data = conf.ssm,
+          aes(fill = SSM),
+          colour = NA,
+          alpha = 0.35) +
   geom_sf(data = line.ssm,
             aes(colour = SSM)) +
-  geom_sf(data = zbox_sf, size = 0.5, colour = "black", fill = NA) +
+  geom_sf(data = zbox_sf, linewidth = 0.5, colour = "black", fill = NA) +
   scale_colour_manual(values = c("firebrick", "dodgerblue")) +
+  scale_fill_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
   labs(x = element_blank(), y = element_blank()) +
   theme_minimal() +
   theme(axis.text = element_text(size = 8),
@@ -72,19 +120,26 @@ pA <- ggplot() +
 pAsub1 <- ggplot() +
   geom_sf(data = dat, 
              col = "orange", 
-             size = 1) +
+             shape = 3,
+             size = 0.8) +
+  geom_sf(data = conf.ssm,
+          aes(fill = SSM),
+          colour = NA,
+          alpha = 0.05) +
   geom_sf(data = line.ssm,
-            aes(colour = SSM)) +
+            aes(colour = SSM),
+          linewidth = 0.75) +
   coord_sf(xlim = c(bb_zbox[1], bb_zbox[3]), 
            ylim = c(bb_zbox[2], bb_zbox[4]), 
            crs = prj, 
            expand = FALSE) +
   scale_colour_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
+  scale_fill_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
   labs(x = element_blank(), y = element_blank()) +
   theme_minimal() +
   theme(axis.text = element_blank(),
         panel.background = element_rect(colour = "white"),
-        panel.border = element_rect(fill=NA, size=0.5))
+        panel.border = element_rect(fill=NA, linewidth=0.5))
 
 pAsub1 <- ggplotGrob(pAsub1)
 
@@ -124,23 +179,28 @@ p4 <- plot(res.crw, "acf") +
         axis.title = element_text(size = 8))
 
 pAA / (p1 | p3) / (p2 | p4) +
-  plot_layout(widths = c(3,3,3),
+  patchwork::plot_layout(widths = c(3,3,3),
               heights = c(3,1,1)) +
   patchwork::plot_annotation(tag_levels = "a") &
   theme(plot.tag = element_text(size = 9))
 ```
 
-Plots of predicted states on top of the observations suggest both models yield similar global fits (Fig. \ref{fig:ex1}a; blue versus red lines), but discrepancies are visible at a local scale (Fig. \ref{fig:ex1}a, inset). Predicted locations from the two models differ by a median 6.62 km (range: 0.02, 53.02 km), and there are marked trends in the residuals for the `rw` model fit (Fig. \ref{fig:ex1}b) with significantly positive autocorrelation in both the x and y directions (Fig. \ref{fig:ex1}d). The `crw` prediction residuals show no trend through time and have little autocorrelation (Fig. \ref{fig:ex1}c,e), implying the `crw` process model is a better fit to the data.
+## 3.1 | SSM validation with prediction residuals
+We use a sub-adult male southern elephant seal (*Mirounga leonina*) track included as example data in `foieGras` (`sese2`, id: ct36-E-09), sourced from from the Australian Integrated Marine Observing System (IMOS; data publicly available via [imos.aodn.org.au](http://imos.aodn.org.au)) deployments at Iles Kerguelen in collaboration with the French IPEV and SNO-MEMO programmes. The data are temporally irregular Argos Least-Squares locations. We fitted both the `rw` and `crw` models using `fit_ssm()` with a speed filter threshold (`vmax`) of 4 ms^-1^ and a 12-h time step. We calculated prediction residuals using `osar()`, and then plotted the `osar` residuals to assess and compare the model fits (Fig. \ref{fig:ex1}). 
+
+Plots of predicted states with the observations suggest both models yield similar global fits (Fig. \ref{fig:ex1}a; compare blue versus red lines and 95\% confidence ellipses), but discrepancies are visible at a finer scale (Fig. \ref{fig:ex1}a, inset). Predicted locations from the two models differ by a median 6.62 km (range: 0.02, 53.02 km), and there are marked trends in the residuals for the `rw` model fit (Fig. \ref{fig:ex1}b) with significantly positive autocorrelation in both the x and y directions (Fig. \ref{fig:ex1}d). The `crw` prediction residuals show no temporal trend and have little autocorrelation (Fig. \ref{fig:ex1}c,e), implying the `crw` process model is a better fit to the data.
+
+Although the `crw` process model provides a better fit to the data, confidence ellipses around fitted and predicted location estimates should be examined. The `plot.ssm_df` function provides an easy way to visualise estimated location uncertainty as 95\% confidence intervals/ellipses in 1 (`type = 1`) or 2 dimensions (`type = 2`). When confidence ellipses are large, use of the location estimates without acknowledging their uncertainty in subsequent analyses may lead to biased results.
 
 ## 3.2 | Inferring move persistence  
-To illustrate how move persistence ($\gamma_t$) can be estimated from GPS data, we use four little penguin (*Eudyptula minor*) tracks of daily foraging trips during the chick-rearing period from Montague Island, NSW, Australia \citep[described in][]{Phillips:2022}. The data are temporally irregular GPS locations, with high frequency sampling (mean 15 s) intermittently disrupted by the birds' diving behaviour, and are assumed to have minimal measurement error. We fitted the `crw` SSM to the GPS data to predict temporally regular locations at 5-min intervals, and assumed consistently small bivariate normal location measurement errors (ie. $\pm$ 30 m sd). We then used `fit_mpm()` to estimate $\gamma_t$ from these regularized locations. Finally, we visually compared $\gamma_t$ estimates with prey capture events inferred from accelerometry data \citep[see][for details]{Carroll:2014} to ascertain whether reduced $\gamma_t$ is indicative of active foraging by these penguins.
+To illustrate how move persistence ($\gamma_t$) can be estimated from GPS data, we use four little penguin (*Eudyptula minor*) tracks of daily foraging trips during the chick-rearing period from Montague Island, NSW, Australia \citep[described in][]{Phillips:2022}. The data are temporally irregular GPS locations, with high frequency sampling (mean 15 s) intermittently disrupted by the birds' diving behaviour, and are assumed to have minimal measurement error. We fitted the `crw` SSM to the GPS data to predict temporally regular locations at 2-min intervals, and assumed consistently small bivariate normal location measurement errors (ie. $\pm$ 30 m sd). We then used `fit_mpm` to estimate $\gamma_t$ from these regularized locations. As $\gamma_t$ estimates are sensitive to time interval choice, we compare 2-min estimates with those from both shorter and longer prediction intervals. Finally, we visually compared $\gamma_t$ estimates with prey capture events inferred from accelerometry data \citep[see][for details]{Carroll:2014} to ascertain whether reduced $\gamma_t$ is indicative of active foraging by these penguins. We provide an extra application to illustrate how move persistence can be inferred from Argos data using `fit_ssm` (Appendix S3).
 
-R code is available in Appendix S2 (Supporting Information). We provide an extra application to illustrate how move persistence can be inferred from Argos data using `fit_ssm()` (Appendix S3).
-
-```{r ex32, echo=FALSE, message=FALSE, results='markup', fig.width=7, fig.height=5, cache=TRUE, fig.cap="\\label{fig:ex32} Inferred move persistence, $\\gamma_t$, 1-D time-series (a-d; grey envelopes are 95 % CI's) and along SSM-predicted little penguin tracks (e). Location symbol sizes are proportional to the number of prey capture events, inferred from accelerometry data, at 5-min intervals corresponding to the SSM predicted location times."}
+\blandscape
+```{r ex32, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, fig.width=9, fig.height=5, results='markup', cache=TRUE, fig.cap="\\label{fig:ex32} Inferred move persistence, $\\gamma_t$, from time-regularised little penguin GPS tracks. $\\gamma_t$ estimates were compared across a range of prediction intervals (0.5 to 16 min; a,c,e,g). The 2-min $\\gamma_t$ estimates for each penguin are overlaid with the number of prey capture events, inferred from accelerometry data (black circles in b,d,f,h; grey envelopes are 95 % CI's) and along SSM-predicted penguin tracks (i). Location symbol sizes in (i) are proportional to the number of prey capture events at 2-min intervals corresponding to the SSM predicted location times."}
 load("../data/ex32_lipe.RData")
 
-p <- plot(fmp, ncol = 2, pages = 1, ask = FALSE, pal = "Plasma") &
+## generate time-series plots of move persistence
+p <- plot(fmp2, ncol = 1, pages = 1, ask = FALSE, pal = "Plasma") &
   theme(legend.position = "none",
         plot.title = element_blank(),
         axis.text = element_text(size = 6),
@@ -185,13 +245,51 @@ merge.tracks.preds <- function(tracks, preds){
   return(tracks)
 }
 
-peng.ssm_sf <- grab(fit, "p", as_sf = TRUE)
+peng.ssm_sf <- grab(fit2, "p", as_sf = TRUE)
 
 ## aggregate prey capture events to SSM location times & append
 peng.ssm_sf <- merge.tracks.preds(peng.ssm_sf, svm.pc)
 
 ## append move persistence estimates
-peng.ssm_sf <- peng.ssm_sf %>% mutate(g = grab(fmp, "f")$g)
+peng.ssm_sf <- peng.ssm_sf %>% mutate(g = grab(fmp2, "f")$g)
+
+## update move persistence time-series plot with prey captures
+## first, normalise preyCount to 0,1
+p[[1]] <- suppressMessages(p[[1]] + geom_point(data = subset(peng.ssm_sf,
+                                            id == "G123f02"),
+                              aes(date, preyCount * 0.091), 
+                              size = 0.2) +
+  scale_y_continuous(expression(gamma[t]), 
+                     limits = c(0,1),
+                     sec.axis = sec_axis(~ ./0.091, name = "")
+                     ))
+
+p[[2]] <- suppressMessages(p[[2]] + geom_point(data = subset(peng.ssm_sf,
+                                            id == "G124m10"),
+                              aes(date, preyCount * 0.091), 
+                              size = 0.2) +
+  scale_y_continuous(expression(gamma[t]), 
+                     limits = c(0,1),
+                     sec.axis = sec_axis(~ ./0.091, name = "")
+                     ))
+
+p[[3]] <- suppressMessages(p[[3]] + geom_point(data = subset(peng.ssm_sf,
+                                            id == "G126m05"),
+                              aes(date, preyCount * 0.091), 
+                              size = 0.2) +
+  scale_y_continuous(expression(gamma[t]), 
+                     limits = c(0,1),
+                     sec.axis = sec_axis(~ ./0.091, name = "")
+                     ))
+
+p[[4]] <- suppressMessages(p[[4]] + geom_point(data = subset(peng.ssm_sf,
+                                            id == "L013m01"),
+                              aes(date, preyCount * 0.091), 
+                              size = 0.2) +
+  scale_y_continuous(expression(gamma[t]), 
+                     limits = c(0,1),
+                     sec.axis = sec_axis(~ ./0.091, name = "")
+                     ))
 
 ## expand limits to preserve map boundaries
 bb <- sf::st_bbox(peng.ssm_sf)
@@ -204,8 +302,8 @@ my.aes <- aes_lst(conf = F, line = T, mp_pal = hcl.colors(n=100, "Plasma"))
 my.aes$df$size[1] <- 1
 
 m <- map(
-  fit,
-  fmp,
+  fit2,
+  fmp2,
   what = "p",
   aes = my.aes,
   map_type = "cartolight",
@@ -218,7 +316,7 @@ m <- map(
           shape = 21, 
           stroke = 0.3,
           inherit.aes = TRUE) +
-  scale_size(breaks = c(1,10,20), 
+  scale_size(breaks = c(1,5,10), 
              range = c(1, 4), 
              name = "prey\ncaptures",
              guide = "none") +
@@ -242,11 +340,11 @@ m <- map(
         legend.title = element_text(size = 8),
         legend.text = element_text(size = 6),
         axis.text = element_text(size = 6),
-        panel.grid = element_line(colour = "grey40"),
+        panel.grid = element_line(colour = grey(0.7), linewidth = 0.01),
         panel.background = element_blank(),
         panel.ontop = TRUE)
 
-label.df <- data.frame(tag = c("a","b","c","d"), 
+label.df <- data.frame(tag = c("b","d","f","h"), 
                         x = c(0.3, 0.8, 0.15, 0.83) * 
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
                         y = c(0.85, 0.15, 0.4, 0.5) * 
@@ -269,12 +367,12 @@ pc.df <- data.frame(x = c(0.15, 0.205, 0.26, 0.33) *
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
                     y = rep(0.11, 4) * 
                          (bb["ymax"] - bb["ymin"]) + bb["ymin"],
-                    size = c(1, 1, 6, 15))
+                    size = c(1, 1, 6, 12))
 pc.labels <- data.frame(x = c(0.15, 0.205, 0.26, 0.33) * 
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
                     y = rep(0.08, 4) * 
                          (bb["ymax"] - bb["ymin"]) + bb["ymin"],
-                    tag = c("0", "1", "10", "20"))
+                    tag = c("0", "1", "5", "10"))
 
 m <- m +
   geom_text(data = pc.title, 
@@ -301,26 +399,110 @@ m <- m +
             size = 2,
             inherit.aes = FALSE)
 
+ggp <- lapply(1:4, function(i) {
+  ## move persistence estimates at different time scales
+  g05 <- grab(fmp05, "f") %>% filter(id == unique(id)[i])
+  g1 <- grab(fmp1, "f") %>% filter(id == unique(id)[i])
+  g2 <- grab(fmp2, "f") %>% filter(id == unique(id)[i])
+  g4 <- grab(fmp4, "f") %>% filter(id == unique(id)[i])
+  g8 <- grab(fmp8, "f") %>% filter(id == unique(id)[i])
+  g16 <- grab(fmp16, "f") %>% filter(id == unique(id)[i])
+  gg <- bind_rows(g05, g1, g2, g4, g8, g16) %>%
+    mutate(interval = rep(c(0.5, 1, 2, 4, 8, 16),
+                          c(
+                            nrow(g05), nrow(g1), nrow(g2),
+                            nrow(g4), nrow(g8), nrow(g16)
+                          ))) %>%
+    mutate(interval = as.factor(interval))
+  
+  p <- ggplot() +
+    geom_path(data = gg, aes(date, g, colour = interval,
+                             group = interval)) +
+    geom_path(
+      data = gg %>% filter(interval == 2),
+      aes(date, g),
+      colour = "#FB8072",
+      linewidth = 1
+    ) +
+    scale_colour_manual(
+      values = c(
+        "#FFFFB3",
+        "#BEBADA",
+        "#FB8072",
+        "#8DD3C7",
+        "#FDB462",
+        "#80B1D3"
+      ),
+      name = "prediction\ninterval (min)"
+    ) +
+    ylim(0, 1) +
+    theme_grey() +
+    theme(
+      legend.title = element_text(size = 6),
+      axis.title.y = element_text(size = 10),
+      legend.position = "none",
+      axis.text = element_text(size = 6),
+      panel.grid.minor = element_blank()
+    ) +
+    xlab(element_blank()) +
+    ylab(expression(gamma[t]))
+  
+  if(i==4) {
+    p <- p + theme(legend.position = "bottom", #c(0.5, 0.12),
+      legend.direction = "horizontal",
+      legend.key.width = unit(0.03, "npc"),
+      legend.key.height = unit(0.0001, "npc"),
+      legend.text = element_text(size = 6),
+      legend.background = element_blank())
+  }
+  return(p)
+})
+
+ggp[[1]] <- ggp[[1]] + 
+    scale_x_datetime(date_breaks = "3 hours", date_labels = "%H:%M")
+ggp[[2]] <- ggp[[2]] + 
+    scale_x_datetime(date_breaks = "3 hours", date_labels = "%H:%M")
+ggp[[3]] <- ggp[[3]] + 
+    scale_x_datetime(date_breaks = "4 hours", date_labels = "%H:%M")
+ggp[[4]] <- ggp[[4]] + 
+    scale_x_datetime(date_breaks = "5 hours", date_labels = "%H:%M")
+
+design <- "
+1299
+3499
+5699
+7899
+"
+
 ## plot movement persistence 1-D time-series and map along 2-D tracks
-(p | m) +
-  plot_layout(widths = c(2.2, 3)) +
-  plot_annotation(tag_levels = "a") &
+ggp[[1]] + p[[1]] + ggp[[2]] + p[[2]] + ggp[[3]] + p[[3]] + ggp[[4]] + p[[4]] + m +
+  patchwork::plot_layout(design = design) +
+  patchwork::plot_annotation(tag_levels = "a") &
   theme(plot.tag = element_text(size = 9))
+ grid::grid.draw(grid::textGrob("Number of prey captures per 2 min", 
+                                x = 0.55, y = 0.55, rot = 270, 
+                                gp = grid::gpar(fontsize = 10)))
 ```
 
-The little penguin GPS tracks did not exhibit strong contrast in move persistence, with $\gamma_t$ declining below 0.5 for only two of the birds (Fig. \ref{fig:ex32}a-d). Nonetheless, the move persistence estimates highlight change in movement pattern over the course of the penguins' daily foraging trips (Fig. \ref{fig:ex32}e). The penguins departed Montague Is. with relatively fast movements, three directed southward (Fig. \ref{fig:ex32} tracks b-d in e) and one less directed and remaining close to the island (track a), before slowing down and engaging in meandering movements (orange - red in Fig. \ref{fig:ex32}e). Lower $\gamma_t$ was associated with consistently higher and more frequent prey captures, implying that low move persistence is indicative of foraging activity by these penguins (Fig. \ref{fig:ex32}e). The spatially diffuse bouts of lower move persistence may reflect the fine-scale patchiness of the penguins' forage-fish prey with search and prey-capture occurring both within and among discrete neighbouring prey aggregations \citep{Carroll:2017}.  
+
+\elandscape
+
+As $\gamma_t$ is sensitive to choice of prediction time interval, it is important that a range of intervals be evaluated. Although the chosen 2-min prediction interval is longer than the GPS sampling frequency (15 s), it adequately captures the main changes in $\gamma_t$ (Fig. \ref{fig:ex32}a,c,e,g). Shorter intervals (0.5 and 1 min) have substantial short-term variability that may not reflect real changes in movement pattern, while longer intervals (8 and 16 min) likely smooth out too much real variability in the movements.
+
+The little penguin GPS tracks did not exhibit strong contrast in move persistence ($\gamma_t$ range = 0.102, 0.871; Fig. \ref{fig:ex32}b,d,f,h). Nonetheless, the move persistence estimates highlight changes in movement pattern over the course of the penguins' daily foraging trips (Fig. \ref{fig:ex32}i). The penguins departed Montague Is. with relatively fast movements, three directed southward (Fig. \ref{fig:ex32} tracks d,f,h in i) and one less directed and remaining closer to the island (track b), before slowing down and engaging in meandering movements (orange - purple in Fig. \ref{fig:ex32}i). The high $\gamma_t$ estimates at the start of the penguins' foraging trips were associated with few prey captures (Fig. \ref{fig:ex32}b,d,f). However, periods of lower $\gamma_t$ were only loosely associated with higher prey captures. For example, penguin "h" had no prey captures as $\gamma_t$ declined toward the end of its foraging trip (Fig. \ref{fig:ex32}h). This period of lower $\gamma_t$ is likely indicative of resting as returning penguins usually wait offshore until after dusk before hauling out on the island. These results highlight that while move persistence can objectively indicate where animals spend more (low $\gamma_t$) or less (high $\gamma_t$) time, the behaviour(s) responsible for these patterns may not be obvious or consistent \citep[e.g.,][]{Riaz:2021}.
+
 
 ## 3.3 | Simulating tracks from `foieGras` model fits
 
 To illustrate how to simulate tracks from `foieGras` model fits we use a juvenile harp seal (*Pagophilus groenlandicus*) tracked from the Gulf of St Lawrence, Canada, \citep[described in][]{Grecian:2022}. The data are temporally irregular Argos locations including error ellipse information. We fit the `crw` model using `fit_ssm` with a 4 ms^-1^ speed filter threshold (`vmax`) and a 12-h prediction interval (`time.step`).
 
-We simulate 50 animal movement paths from the `crw` process model using `simfit`, and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to largely remain in water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 10% retained (`keep = 0.1`)(Fig. \ref{fig:ex33}a,b). As the potential function does not guarantee all locations remain off land, we re-route any remaining simulated locations from land back to water using `route_path` (Fig. \ref{fig:ex33}c). In combination, these functions provide a pragmatic, non-statistical method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications. R code is available in Appendix S4 (Supporting Information).
+We simulate 50 animal movement paths from the `crw` process model using `sim_fit`, and apply a potential function using the `grad` and `beta` arguments to constrain the simulated paths to largely remain in water. These tracks are then filtered based on their similarity to the original path using `sim_filter` and the top 25 % retained (`keep = 0.25`)(Fig. \ref{fig:ex33}a,b). As the potential function does not guarantee all locations remain off land, we re-route any remaining simulated locations from land back to water using `route_path` (Fig. \ref{fig:ex33}c). In combination, these functions provide a pragmatic, non-statistical method to generate and objectively filter pseudo-tracks for use in movement or habitat modelling applications.
 
-```{r ex33, echo = FALSE, message = FALSE, results = 'markup', fig.width = 9, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex33} Simulating (a) 100 movement paths from a correlated random walk process model; (b) filtering those tracks to select the top 10% based on their similarity to the original SSM-predicted track (red); and (c) re-routing simulated locations on land (orange) back to ocean (blue). The orange box in (b) indicates region magnified in (c). SSM-predicted track (red) overlaid in all panels for context."}
+```{r ex33, echo = FALSE, message = FALSE, results = 'markup', fig.width = 6, fig.height = 6, cache = TRUE, fig.cap = "\\label{fig:ex33} Simulating (a) 100 movement paths from a correlated random walk process model; (b) filtering those tracks to select the top 25% based on their similarity to the original SSM-predicted track (red); and (c) re-routing simulated locations on land (orange) back to ocean (blue). The orange box in (b) indicates region magnified in (c). SSM-predicted track (red) overlaid in all panels for context."}
 # load track data
 locs <- readRDS("../data/ex33.rds")
 
-# load gradient rasters for simfit
+# load gradient rasters for sim_fit
 load(system.file("extdata/grad.rda", package = "foieGras"))
 
 # fit <- fit_ssm(locs %>% filter(id == "hp6-749-19"), 
@@ -330,14 +512,14 @@ load(system.file("extdata/grad.rda", package = "foieGras"))
 #                control = ssm_control(verbose = 0))
 # 
 # set.seed(10000)
-# trs <- foieGras::simfit(fit,
+# trs <- foieGras::sim_fit(fit,
 #               what = "predicted",
 #               reps = 100,
 #               grad = grad,
 #               beta = c(-350, -350))
 # 
 # trs_flt <- foieGras::sim_filter(trs,
-#                       keep = 0.1,
+#                       keep = 0.25,
 #                       flag = 2)
 # 
 # trs_flt_rr <- foieGras::route_path(trs_flt,
@@ -437,7 +619,7 @@ p3 <- ggplot() +
   geom_sf(data = world_shp, colour = NA, fill = grey(0.6)) +
   geom_sf(data = trs_flt_sf, colour = "orange", size = 0.8) +
   geom_sf(data = trs_flt_rr_sf, colour = "dodgerblue", size = 0.8) +
-  geom_sf(data = pline_sf, size = 0.2, colour = "firebrick") +
+  geom_sf(data = pline_sf, linewidth = 0.2, colour = "firebrick") +
   geom_sf(data = plocs_sf, size = 0.4, colour = "firebrick") +
   coord_sf(xlim = c(bb_zbox[1], bb_zbox[3]), 
            ylim = c(bb_zbox[2], bb_zbox[4]), 
