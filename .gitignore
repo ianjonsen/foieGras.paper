@@ -1,7 +1,6 @@
 # History files
 .Rhistory
 .Rapp.history
-<<<<<<< HEAD
 
 # Session Data files
 .RData
@@ -67,4 +66,6 @@ vignettes/*.pdf
 .Renviron
 .DS_Store
 
+paper_sections/full_document.pdf
+paper_sections/full_document.docx
 *.cache
