@@ -27,17 +27,22 @@ lipe <- read.csv("data/lipe_gps_ex32.csv")
 ## Load prey capture data from .csv file
 lipe.pc <- read.csv("data/lipe_pc_ex32.csv")
 
-## fit `crw` SSM, using: 1) speed filter (vmax) of 5 m/s to exclude any extreme 
+## fit 6 `crw` SSMs, using: 1) speed filter (vmax) of 5 m/s to exclude any extreme 
 ##   observations; 2) excluding any locations occurring < 5 s apart in time (min.dt); 
-##   3) a 5-min time.step
-fit <- fit_ssm(lipe, vmax=5, min.dt=5, model="crw", time.step=5/60)
+##   3) 0.5, 1, 2, 4, 8, 16-min time.steps
+ts <- c(0.5,1,2,4,8,16)
+fits <- lapply(1:6, function(i) {
+  fit_ssm(lipe, vmax=5, min.dt=5, model="crw", time.step=ts[i]/60)
+})
 ```
 
-### Fit move persistence model with `fit_mpm` to SSM-predicted locations
+### Fit move persistence models with `fit_mpm` to SSM-predicted locations
 ```{r fit mpm, eval=FALSE, message=FALSE}
 
 ## use `jmpm` model to fit jointly across the 4 penguin tracks
-fmp <- fit_mpm(fit, what = "predicted", model = "jmpm")
+fmps <- lapply(fits, function(x) {
+  fit_mpm(x, what = "predicted", model = "jmpm")
+  })
 ```
 
 ### Function to merge track & predation events
@@ -74,21 +79,21 @@ merge.tracks.preds <- function(tracks, preds){
 
 ### Aggregate prey capture events & append to locations
 ```{r, eval=FALSE, message=FALSE}
-## grab SSM-predicted locations
-peng.ssm_sf <- grab(fit, "p", as_sf = TRUE)
+## grab SSM-predicted locations (use 2-min predictions)
+peng.ssm_sf <- grab(fits[[3]], "p", as_sf = TRUE)
 
 ## aggregate prey capture events to location times & append
 peng.ssm_sf <- merge.tracks.preds(peng.ssm_sf, lipe.pc)
 
 ## append move persistence estimates
-peng.ssm_sf <- peng.ssm_sf %>% mutate(g = grab(fmp, "f")$g)
+peng.ssm_sf <- peng.ssm_sf %>% mutate(g = grab(fmps[[3]], "f")$g)
 ```
 
 ### Plot move persistence time-series for 5-min prediction interval & map along SSM-predicted tracks
 ```{r plot-map, eval=FALSE, message=FALSE}
 
-## plot move persistence time-series for all 4 penguins, drop legend
-p <- plot(fmp, ncol = 2, pages = 1, pal = "Plasma") &
+## plot move persistence (using 2-min) time-series for all 4 penguins, drop legend
+p <- plot(fmps[[3]], ncol = 2, pages = 1, pal = "Plasma") &
   theme(legend.position = "none",
         plot.title = element_blank(),
         axis.text = element_text(size = 6),
@@ -123,8 +128,8 @@ my.aes <- aes_lst(conf = F, line = T, mp_pal = hcl.colors(n=100, "Plasma"))
 my.aes$df$size[1] <- 1
 
 m <- foieGras::map(
-  fit,
-  fmp,
+  fits[[3]],
+  fmps[[3]],
   what = "p",
   aes = my.aes,
   map_type = "cartolight",
@@ -194,7 +199,7 @@ pc.labels <- data.frame(x = c(0.15, 0.205, 0.26, 0.33) *
                          (bb["xmax"] - bb["xmin"]) + bb["xmin"],
                     y = rep(0.08, 4) * 
                          (bb["ymax"] - bb["ymin"]) + bb["ymin"],
-                    tag = c("0", "1", "10", "20"))
+                    tag = c("0", "1", "5", "10"))
 
 m <- m +
   geom_text(data = pc.title, 
@@ -220,11 +225,94 @@ m <- m +
             aes(x, y, label = tag), 
             size = 2,
             inherit.aes = FALSE)
-
-## plot movement persistence 1-D time-series and map along 2-D tracks
-(p | m) +
-  plot_layout(widths = c(2.2, 3)) +
-  plot_annotation(tag_levels = "a") &
-  theme(plot.tag = element_text(size = 9))
 ```
 
+
+### Plot move persistence time-series for the different time scales
+```{r mps, eval=FALSE, message=FALSE}
+ggp <- lapply(1:4, function(i) {
+  g05 <- grab(fmps[[1]], "f") %>% filter(id == unique(id)[i])
+  g1 <- grab(fmps[[2]], "f") %>% filter(id == unique(id)[i])
+  g2 <- grab(fmps[[3]], "f") %>% filter(id == unique(id)[i])
+  g4 <- grab(fmps[[4]], "f") %>% filter(id == unique(id)[i])
+  g8 <- grab(fmps[[5]], "f") %>% filter(id == unique(id)[i])
+  g16 <- grab(fmps[[6]], "f") %>% filter(id == unique(id)[i])
+  gg <- bind_rows(g05, g1, g2, g4, g8, g16) %>%
+    mutate(interval = rep(ts,
+                          c(
+                            nrow(g05), nrow(g1), nrow(g2),
+                            nrow(g4), nrow(g8), nrow(g16)
+                          ))) %>%
+    mutate(interval = as.factor(interval))
+  
+  p <- ggplot() +
+    geom_path(data = gg, aes(date, g, colour = interval,
+                             group = interval)) +
+    geom_path(
+      data = gg %>% filter(interval == 2),
+      aes(date, g),
+      colour = "#FB8072",
+      linewidth = 1
+    ) +
+    scale_colour_manual(
+      values = c(
+        "#FFFFB3",
+        "#BEBADA",
+        "#FB8072",
+        "#8DD3C7",
+        "#FDB462",
+        "#80B1D3"
+      ),
+      name = "prediction\ninterval (min)"
+    ) +
+    ylim(0, 1) +
+    theme_grey() +
+    theme(
+      legend.title = element_text(size = 6),
+      axis.title.y = element_text(size = 10),
+      legend.position = "none",
+      axis.text = element_text(size = 6),
+      panel.grid.minor = element_blank()
+    ) +
+    xlab(element_blank()) +
+    ylab(expression(gamma[t]))
+  
+  if(i==4) {
+    p <- p + theme(legend.position = "bottom", #c(0.5, 0.12),
+      legend.direction = "horizontal",
+      legend.key.width = unit(0.03, "npc"),
+      legend.key.height = unit(0.0001, "npc"),
+      legend.text = element_text(size = 6),
+      legend.background = element_blank())
+  }
+  return(p)
+})
+
+ggp[[1]] <- ggp[[1]] + 
+    scale_x_datetime(date_breaks = "3 hours", date_labels = "%H:%M")
+ggp[[2]] <- ggp[[2]] + 
+    scale_x_datetime(date_breaks = "3 hours", date_labels = "%H:%M")
+ggp[[3]] <- ggp[[3]] + 
+    scale_x_datetime(date_breaks = "4 hours", date_labels = "%H:%M")
+ggp[[4]] <- ggp[[4]] + 
+    scale_x_datetime(date_breaks = "5 hours", date_labels = "%H:%M")
+```
+
+### Render final plot
+```{r render ms plot, eval=FALSE, message=FALSE}
+design <- "
+1299
+3499
+5699
+7899
+"
+
+## plot movement persistence 1-D time-series and map along 2-D tracks
+ggp[[1]] + p[[1]] + ggp[[2]] + p[[2]] + ggp[[3]] + p[[3]] + ggp[[4]] + p[[4]] + m +
+  patchwork::plot_layout(design = design) +
+  patchwork::plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 9))
+ grid::grid.draw(grid::textGrob("Number of prey captures per 2 min", 
+                                x = 0.55, y = 0.55, rot = 270, 
+                                gp = grid::gpar(fontsize = 10)))
+```

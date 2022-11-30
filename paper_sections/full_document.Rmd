@@ -98,7 +98,7 @@ table_out_format <- ifelse("pdf_document" %in% rmarkdown::all_output_formats("..
 # Abstract
 1.  Animal tracking data are indispensable for understanding the ecology, behaviour and physiology of mobile or cryptic species. Meaningful signals in these data can be obscured by noise due to imperfect measurement technologies, requiring rigorous quality control as part of any comprehensive analysis.  
 
-2.  State-space models are powerful tools that can separate meaningful signals from noise. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit other information. However, these statistical models can be challenging and time-consuming to fit to diverse animal tracking data sets.  
+2.  State-space models are powerful tools that separate signal from noise. These tools are ideal for quality control of error-prone location data and for inferring where animals are and what they are doing when they record or transmit other information. However, these statistical models can be challenging and time-consuming to fit to diverse animal tracking data sets.  
 
 3.  The R package `foieGras` eases the tasks of conducting quality control on and inference of changes in movement from animal tracking data. This is achieved via: 1) a simple but extensible workflow that accommodates both novice and experienced users; 2) automated processes that alleviate complexity from data processing and model specification/fitting steps; 3) simple movement models coupled with a powerful numerical optimization approach for rapid and reliable model fitting.  
 
@@ -128,7 +128,7 @@ IDJ acknowledges support from a Macquarie University co-Funded Fellowship and fr
 IDJ developed the R package; WJG contributed harp seal data and to the R package; LP, GC, and RGH contributed little penguin data; CRM, RGH and MAH contributed Southern elephant seal data; IDJ and TAP developed the state-space models; IDJ wrote an initial draft of the manuscript with contributions from WJG; all authors contributed to the final manuscript.
 
 # Data Accessibility 
-All code used here is provided in the `foieGras` package for R or in the Supporting Information. Data will be made publicly available on Dryad [here](http://url.org). For review purposes, the example application data and associated .Rmd files can be accessed here: \url{https://github.com/ianjonsen/foieGras.paper/tree/main/SI}.
+All code used here is provided in the `foieGras` package for R or in the Supporting Information. Data will be made publicly available on Dryad. For review purposes, the example application data and associated .Rmd files can be accessed here: \url{https://github.com/ianjonsen/foieGras.paper/tree/main/SI}.
  
 # ORCID
 *Ian D Jonsen* \url{https://orcid.org/0000-0001-5423-6076}  

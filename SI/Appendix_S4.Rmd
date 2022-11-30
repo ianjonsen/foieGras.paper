@@ -31,7 +31,7 @@ fit <- fit_ssm(locs,
 
 ### Simulate tracks from SSM fit object
 ```{r simulate tracks, eval=FALSE, message=FALSE}
-## load gradient rasters so we can use the potential function in simfit to keep
+## load gradient rasters so we can use the potential function in sim_fit to keep
 ##  locations off land as much as possible. The rasters provide the x & y 
 ##  gradients of distance from coast for all global land polygons.
 load(system.file("extdata/grad.rda", package = "foieGras"))
@@ -42,7 +42,7 @@ set.seed(10000)
 ## simulate 100 tracks from SSM model fit object & apply potential function to
 ##  keep most locations off land (`grad` is the raster object; 
 ##  beta are -ve coefficients to keep x,y coords off land)
-trs <- simfit(fit,
+trs <- sim_fit(fit,
               what = "predicted",
               reps = 100,
               grad = grad,
@@ -50,9 +50,9 @@ trs <- simfit(fit,
 ```
 
 
-### Filter simulated tracks, keep top 10 % most similar to the SSM-predicted track
+### Filter simulated tracks, keep top 25 % most similar to the SSM-predicted track
 ```{r filter sim tracks, eval=FALSE, message=FALSE}
-trs_flt <- sim_filter(trs, keep = 0.1, flag = 2)
+trs_flt <- sim_filter(trs, keep = 0.25, flag = 2)
 ```
 
 ### Re-route any simulated locations occurring on land back to the water

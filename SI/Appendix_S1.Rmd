@@ -64,6 +64,51 @@ line.ssm <- dplyr::bind_rows(line.rw, line.crw) %>%
   dplyr::mutate(SSM = c("rw","crw")) %>%
   dplyr::select(id, SSM, geometry)
 
+## confidence ellipses
+ssm.rw <- grab(fit.rw[1,], "f", as_sf=TRUE) %>% 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+xy <- sf::st_coordinates(ssm.rw)
+ssm.rw <- bind_cols(ssm.rw, xy) %>% 
+  rename(x=X, y=Y) %>%
+  select(id,date, x, y, everything()) %>%
+  split(., .$id)
+
+conf_poly <- lapply(ssm.rw, function(x) {
+          conf <- lapply(1:nrow(x), function(i)
+            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+          tmp <- lapply(conf, function(x)
+            sf::st_polygon(list(x)))
+          sf::st_multipolygon(tmp)
+        })
+
+conf.rw_sf <- sf::st_as_sf(sf::st_as_sfc(conf_poly)) 
+conf.rw_sf$id <- unique(fit.rw[1,]$id)
+
+ssm.crw <- grab(fit.crw[1,], "f", as_sf=TRUE) %>% 
+  sf::st_transform("+proj=stere +lon_0=90 +units=km")
+xy <- sf::st_coordinates(ssm.crw)
+ssm.crw <- bind_cols(ssm.crw, xy) %>% 
+  rename(x=X, y=Y) %>%
+  select(id,date, x, y, everything()) %>%
+  split(., .$id)
+
+conf_poly <- lapply(ssm.crw, function(x) {
+          conf <- lapply(1:nrow(x), function(i)
+            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+          tmp <- lapply(conf, function(x)
+            sf::st_polygon(list(x)))
+          sf::st_multipolygon(tmp)
+        })
+
+conf.crw_sf <- sf::st_as_sf(sf::st_as_sfc(conf_poly)) 
+conf.crw_sf$id <- unique(fit.crw[1,]$id)
+
+conf.ssm <- bind_rows(conf.rw_sf, conf.crw_sf) |>
+  mutate(SSM = c("rw","crw")) |>
+  select(id, SSM, x) |>
+  rename(geometry = x)
+sf::st_crs(conf.ssm) <- sf::st_crs(line.ssm)
+
 ## contruct inset zoom box
 zbox <- structure(list(id = c(1,1,1,1,1), 
                        lon = c(107, 110.25, 110.25, 107, 107), 
@@ -88,11 +133,17 @@ bb_zbox <- sf::st_bbox(zbox_sf)
 pA <- ggplot() +
   geom_sf(data = dat, 
              col = "orange", 
-             size = 1.25) +
+             shape = 3,
+             size = 1) +
+  geom_sf(data = conf.ssm,
+          aes(fill = SSM),
+          colour = NA,
+          alpha = 0.35) +
   geom_sf(data = line.ssm,
             aes(colour = SSM)) +
-  geom_sf(data = zbox_sf, size = 0.5, colour = "black", fill = NA) +
+  geom_sf(data = zbox_sf, linewidth = 0.5, colour = "black", fill = NA) +
   scale_colour_manual(values = c("firebrick", "dodgerblue")) +
+  scale_fill_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
   labs(x = element_blank(), y = element_blank()) +
   theme_minimal() +
   theme(axis.text = element_text(size = 8),
@@ -105,19 +156,26 @@ pA <- ggplot() +
 pAsub1 <- ggplot() +
   geom_sf(data = dat, 
              col = "orange", 
-             size = 1) +
+             shape = 3,
+             size = 0.8) +
+  geom_sf(data = conf.ssm,
+          aes(fill = SSM),
+          colour = NA,
+          alpha = 0.05) +
   geom_sf(data = line.ssm,
-            aes(colour = SSM)) +
+            aes(colour = SSM),
+          linewidth = 0.75) +
   coord_sf(xlim = c(bb_zbox[1], bb_zbox[3]), 
            ylim = c(bb_zbox[2], bb_zbox[4]), 
            crs = prj, 
            expand = FALSE) +
   scale_colour_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
+  scale_fill_manual(values = c("firebrick", "dodgerblue"), guide = "none") +
   labs(x = element_blank(), y = element_blank()) +
   theme_minimal() +
   theme(axis.text = element_blank(),
         panel.background = element_rect(colour = "white"),
-        panel.border = element_rect(fill=NA, size=0.5))
+        panel.border = element_rect(fill=NA, linewidth=0.5))
 
 ## position inset on main map
 pAsub1 <- ggplotGrob(pAsub1)
