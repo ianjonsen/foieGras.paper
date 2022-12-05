@@ -11,7 +11,7 @@ output:
 The workflow for `foieGras` is deliberately simple, with many of the usual track data processing checks handled automatically. Here we outline the main aspects of the `foieGras` package. The package's main functions with brief code examples are listed in Table \ref{tab:func_table_kable}, and a generalized workflow with example code is depicted in Figure \ref{fig:workflow}. 
 
 
-## 2.1 | Data input - `format_data`
+## 2.1 | Data input - `format_data()`
 Animal tracking data, consisting of a time-series of location coordinates, can be read into R as a `data.frame` or `tibble` using standard functions such as `read.csv` or `read_csv`. Possible default input data formats are shown in Figure \ref{fig:workflow}. The `format_data()` function can be used to coerce non-default data formats into that expected by `fit_ssm()`. `format_data()` can be used explicitly in a workflow or it will be called automatically by `fit_ssm()`. More details on input data formats and the use of `format_data()` are provided in the Overview vignette (https://ianjonsen.github.io/foieGras/articles/Overview.html). Additionally, `foieGras` can accept data as an `sf-tibble` or `sf data.frame` with locations in any recognized projection, in which case the SSM-estimated locations will be returned in the same projection. 
 
 ```{r func_table, echo=FALSE, fig.width=5, fig.height=6, message=FALSE, warning=FALSE, cache=TRUE}
