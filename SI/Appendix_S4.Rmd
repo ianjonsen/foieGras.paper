@@ -15,7 +15,7 @@ require(tidyverse)
 require(ggspatial)
 require(patchwork)
 require(sf)
-require(foieGras)
+require(aniMotum)
 ```
 
 ### Fit `crw` SSM to harp seal track
@@ -34,7 +34,7 @@ fit <- fit_ssm(locs,
 ## load gradient rasters so we can use the potential function in sim_fit to keep
 ##  locations off land as much as possible. The rasters provide the x & y 
 ##  gradients of distance from coast for all global land polygons.
-load(system.file("extdata/grad.rda", package = "foieGras"))
+load(system.file("extdata/grad.rda", package = "aniMotum"))
 
 ## ensure simulated tracks are same as in main text figure
 set.seed(10000)
@@ -109,7 +109,7 @@ plocs_sf <- grab(fit, "predicted", as_sf = TRUE) %>%
 \pagebreak
 ```{r,eval=FALSE, message=FALSE}
 ## project & cast SSM-predicted locations to MULTILINESTRING for track lines
-pline_sf <- foieGras::grab(fit, "predicted", as_sf = TRUE) %>%
+pline_sf <- aniMotum::grab(fit, "predicted", as_sf = TRUE) %>%
   sf::st_transform(crs = prj) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise(do_union = FALSE, .groups = "drop") %>%

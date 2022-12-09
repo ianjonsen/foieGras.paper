@@ -15,7 +15,7 @@ require(tidyverse)
 require(ggspatial)
 require(patchwork)
 require(sf)
-require(foieGras)
+require(aniMotum)
 ```
 
 ### Fit `crw` SSM with 5-min `time.step` to time-regularise little penguin tracks
@@ -112,7 +112,7 @@ p[[4]] <- p[[4]] &
 \pagebreak
 ### Map SSM-predicted locations with move persistence & prey capture estimates
 ```{r plot-map2, eval=FALSE, message=FALSE, fig.width=7, fig.height=5}
-## use foieGras::map to merge SSM & MPM model fits (SSM = fit, MPM = fmp);
+## use aniMotum::map to merge SSM & MPM model fits (SSM = fit, MPM = fmp);
 ##  use map tiles for better coastline resolution (Montague Is not in 
 ##  `rnaturalearthhires` polygon data)
 
@@ -127,7 +127,7 @@ bb["ymax"] <- bb["ymax"] + diff(bb[c(2,4)]) * 0.2/2
 my.aes <- aes_lst(conf = F, line = T, mp_pal = hcl.colors(n=100, "Plasma"))
 my.aes$df$size[1] <- 1
 
-m <- foieGras::map(
+m <- aniMotum::map(
   fits[[3]],
   fmps[[3]],
   what = "p",

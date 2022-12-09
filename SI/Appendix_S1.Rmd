@@ -14,13 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 require(tidyverse)
 require(patchwork)
 require(sf)
-require(foieGras)
+require(aniMotum)
 ```
 
 ### Fit `rw` and `crw` SSM's with 12-h `time.step` to southern elephant seal example data
 ```{r fit SSMs, eval=FALSE, message=FALSE}
-## access data from foieGras
-data(sese2, package = "foieGras")
+## access data from aniMotum
+data(sese2, package = "aniMotum")
 
 ## use only 1 seal track
 sese2 <- subset(sese2, id == "ct36-E-09")
@@ -75,7 +75,7 @@ ssm.rw <- bind_cols(ssm.rw, xy) %>%
 
 conf_poly <- lapply(ssm.rw, function(x) {
           conf <- lapply(1:nrow(x), function(i)
-            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+            with(x, aniMotum:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
           tmp <- lapply(conf, function(x)
             sf::st_polygon(list(x)))
           sf::st_multipolygon(tmp)
@@ -94,7 +94,7 @@ ssm.crw <- bind_cols(ssm.crw, xy) %>%
 
 conf_poly <- lapply(ssm.crw, function(x) {
           conf <- lapply(1:nrow(x), function(i)
-            with(x, foieGras:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
+            with(x, aniMotum:::elps(x[i], y[i], x.se[i], y.se[i], 90)))
           tmp <- lapply(conf, function(x)
             sf::st_polygon(list(x)))
           sf::st_multipolygon(tmp)
@@ -194,7 +194,7 @@ pAA <- pA +
 ### Panel B - plot time-series of prediction residuals for `rw` model
 ```{r panel b, eval=FALSE, message=FALSE}
 
-## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+## use `aniMotum::plot.osar()`; modify with additional ggplot2 functions
 pB <- plot(res.rw, "ts") + 
   xlab(element_blank()) + 
   ylab("Residuals") +
@@ -208,7 +208,7 @@ pB <- plot(res.rw, "ts") +
 ### Panel C - plot autocorrelation functions of prediction residuals for `rw` model
 ```{r panel c, eval=FALSE, message=FALSE}
 
-## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+## use `aniMotum::plot.osar()`; modify with additional ggplot2 functions
 pC <- plot(res.rw, "acf") + 
   theme(strip.text.y = element_blank(),
         axis.text = element_text(size = 8),
@@ -219,7 +219,7 @@ pC <- plot(res.rw, "acf") +
 ### Panel D - plot time-series of prediction residuals for `crw` model
 ```{r panel d, eval=FALSE, message=FALSE}
 
-## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+## use `aniMotum::plot.osar()`; modify with additional ggplot2 functions
 pD <- plot(res.crw, "ts") + 
   xlab(element_blank()) + 
   ylab(element_blank()) +
@@ -232,7 +232,7 @@ pD <- plot(res.crw, "ts") +
 ### Panel E - plot autocorrelation functions of prediction residuals for `crw` model
 ```{r panel e, eval=FALSE, message=FALSE}
 
-## use `foieGras::plot.osar()`; modify with additional ggplot2 functions
+## use `aniMotum::plot.osar()`; modify with additional ggplot2 functions
 pE <- plot(res.crw, "acf") + 
   ylab(element_blank()) +
   theme(strip.text.y = element_blank(),

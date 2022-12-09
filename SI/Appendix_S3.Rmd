@@ -24,7 +24,7 @@ require(patchwork)
 require(sf)
 require(future)
 require(furrr)
-require(foieGras)
+require(aniMotum)
 ```
 
 ```{r fit SSM1, echo = FALSE, eval=TRUE, message=FALSE}
@@ -80,7 +80,7 @@ my.aes$df$fill[5] <- grey(0.4)
 my.aes$df$fill[6] <- grey(0.6)
 
 ## project map, add scale bar using ggspatial::annotation_scale
-m1 <- foieGras::map(fit, 
+m1 <- aniMotum::map(fit, 
           what = "p", 
           aes = my.aes,
           crs = "+proj=stere +lon_0=95 +units=km +datum=WGS84 +no_defs",
@@ -165,7 +165,7 @@ require(ggspatial)
 require(ggforce)
 require(patchwork)
 require(sf)
-require(foieGras)
+require(aniMotum)
 ```
 
 ### Fit `mp` SSM with 12-h `time.step` to infer movement persistence along 4 southern elephant seal tracks. Use `future` and `furrr` R packages to fit SSM to individual seal tracks using parallel processing for computation speed-up.
@@ -227,7 +227,7 @@ my.aes$df$fill[5] <- grey(0.4)
 my.aes$df$fill[6] <- grey(0.6)
 
 ## project map, add scale bar using ggspatial::annotation_scale
-m1 <- foieGras::map(fit, 
+m1 <- aniMotum::map(fit, 
           what = "p", 
           aes = my.aes,
           crs = "+proj=stere +lon_0=95 +units=km +datum=WGS84 +no_defs",
