@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.11.16)  9 DEC 2022 11:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.11.16)  11 DEC 2022 14:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -679,25 +679,25 @@ LaTeX Font Warning: Font shape `T1/lmss/bx/sc' undefined
 [2] [3]
 
 LaTeX Font Warning: Font shape `T1/lmtt/bx/sc' undefined
-(Font)              using `T1/lmtt/bx/n' instead on input line 233.
+(Font)              using `T1/lmtt/bx/n' instead on input line 234.
 
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 233.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 234.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/sc' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 244.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 245.
 [4]
-Underfull \hbox (badness 1622) in paragraph at lines 270--270
+Underfull \hbox (badness 1622) in paragraph at lines 271--271
 []|\T1/lmr/m/n/12 (+20) Coerce track-ing data into the for-mat ex-pected by
  []
 
 
-Overfull \hbox (47.53976pt too wide) in paragraph at lines 266--286
+Overfull \hbox (47.53976pt too wide) in paragraph at lines 267--287
  [][] 
  []
 
 [5]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 3
-12.
+13.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [6
@@ -708,13 +708,13 @@ File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 File: ../figures/workflow_schematic_v2.png Graphic file (type png)
 <use ../figures/workflow_schematic_v2.png>
 Package pdftex.def Info: ../figures/workflow_schematic_v2.png  used on input li
-ne 373.
+ne 374.
 (pdftex.def)             Requested size: 457.48315pt x 595.20465pt.
 
-LaTeX Warning: Float too large for page by 27.33174pt on input line 374.
+LaTeX Warning: Float too large for page by 27.33174pt on input line 375.
 
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-387.
+388.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [8
@@ -724,13 +724,13 @@ File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 <../figures/ex31-1.pdf, id=194, 492.84125pt x 518.93875pt>
 File: ../figures/ex31-1.pdf Graphic file (type pdf)
 <use ../figures/ex31-1.pdf>
-Package pdftex.def Info: ../figures/ex31-1.pdf  used on input line 538.
+Package pdftex.def Info: ../figures/ex31-1.pdf  used on input line 539.
 (pdftex.def)             Requested size: 472.05435pt x 497.05113pt.
 [12] [13 <../figures/ex31-1.pdf>] [14]
 <../figures/ex32-1.pdf, id=247, 602.25pt x 335.2525pt>
 File: ../figures/ex32-1.pdf Graphic file (type pdf)
 <use ../figures/ex32-1.pdf>
-Package pdftex.def Info: ../figures/ex32-1.pdf  used on input line 612.
+Package pdftex.def Info: ../figures/ex32-1.pdf  used on input line 613.
 (pdftex.def)             Requested size: 602.24852pt x 335.25168pt.
 [15 <../figures/ex32-1.pdf>] [16
 
@@ -739,20 +739,31 @@ Package pdftex.def Info: ../figures/ex32-1.pdf  used on input line 612.
 <../figures/ex33-1.pdf, id=290, 421.575pt x 325.215pt>
 File: ../figures/ex33-1.pdf Graphic file (type pdf)
 <use ../figures/ex33-1.pdf>
-Package pdftex.def Info: ../figures/ex33-1.pdf  used on input line 687.
+Package pdftex.def Info: ../figures/ex33-1.pdf  used on input line 688.
 (pdftex.def)             Requested size: 421.58038pt x 325.21916pt.
-[17 <../figures/ex33-1.pdf>] [18] [19] [20] (./full_document.bbl [21] [22] [23]
-) [24] (./full_document.aux)
+[17 <../figures/ex33-1.pdf>] [18]
+Underfull \hbox (badness 4518) in paragraph at lines 744--751
+\T1/lmr/m/n/12 (+20) via \T1/lmtt/m/n/12 install.packages("aniMotum", repos = "
+https://ianjonsen.r-universe.dev")\T1/lmr/m/n/12 (+20) .
+ []
+
+
+Underfull \hbox (badness 1132) in paragraph at lines 744--751
+\T1/lmr/m/n/12 (+20) Other in-stal-la-tion op-tions ex-ist and we re-fer users 
+to ad-di-tional in-for-ma-tion here
+ []
+
+[19] [20] (./full_document.bbl [21] [22] [23]) [24] (./full_document.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 15183 strings out of 478994
- 225097 string characters out of 5858183
- 584252 words of memory out of 5000000
+ 15181 strings out of 478994
+ 225075 string characters out of 5858183
+ 583252 words of memory out of 5000000
  32049 multiletter control sequences out of 15000+600000
- 490756 words of font info for 183 fonts, out of 8000000 for 9000
+ 490627 words of font info for 182 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  85i,12n,88p,839b,499s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/lo
@@ -770,10 +781,10 @@ ic/lm/lmss8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmssb
 x10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></
 usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/
 texlive/2021/texmf-dist/fonts/type1/public/lm/lmtt12.pfb>
-Output written on full_document.pdf (24 pages, 9951758 bytes).
+Output written on full_document.pdf (24 pages, 9951378 bytes).
 PDF statistics:
- 524 PDF objects out of 1000 (max. 8388607)
- 467 compressed objects within 5 object streams
+ 523 PDF objects out of 1000 (max. 8388607)
+ 466 compressed objects within 5 object streams
  106 named destinations out of 1000 (max. 500000)
  49333 words of extra memory for PDF output out of 51595 (max. 10000000)
 
